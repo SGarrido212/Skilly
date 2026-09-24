@@ -1,0 +1,151 @@
+<!-- -- PLANTILLA DE PANEL DE CONTROL DE PROFESIONAL -- -->
+{% extends 'base.html' %}
+
+{% block title %}Panel de Control Profesional | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-brand-600 text-white font-extrabold flex items-center justify-center text-xl shadow">
+                {{ user.first_name|first|default:user.username|first|upper }}
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold text-slate-900">Panel de Control: {{ user.get_full_name|default:user.username }}</h1>
+                <p class="text-xs text-slate-500 font-medium">Gestión de servicios, reservas recibidas y disponibilidad</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{% url 'users:public_pro_profile' slug=profile.slug %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-eye"></i> Mi Perfil Público
+            </a>
+            <a href="{% url 'services:service_create' %}" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> Publicar Servicio
+            </a>
+        </div>
+    </div>
+
+    {% if profile.validation_status == 'PENDIENTE' %}
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center justify-between text-xs text-amber-900">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-clock text-amber-600 text-xl"></i>
+                <div>
+                    <span class="font-bold block">Perfil en Proceso de Validación Documental</span>
+                    <span class="text-amber-700">El equipo de Skilly Back-Office está revisando tus documentos de respaldo. Podrás recibir contrataciones normales.</span>
+                </div>
+            </div>
+            <a href="{% url 'users:profile_edit' %}" class="px-3 py-1.5 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-700 transition-colors">
+                Subir Documentos
+            </a>
+        </div>
+    {% elif profile.validation_status == 'RECHAZADO' %}
+        <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center justify-between text-xs text-rose-900">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-circle-xmark text-rose-600 text-xl"></i>
+                <div>
+                    <span class="font-bold block">Validación Rechazada</span>
+                    <span class="text-rose-700">Motivo: {{ profile.rejection_reason|default:"Documentación incompleta." }} Por favor actualiza tus documentos.</span>
+                </div>
+            </div>
+            <a href="{% url 'users:profile_edit' %}" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 transition-colors">
+                Re-subir Documentos
+            </a>
+        </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-inbox text-brand-600"></i> Solicitudes & Reservas Recibidas
+            </h2>
+            <span class="text-xs font-bold text-slate-500">Total: {{ bookings|length }}</span>
+        </div>
+
+        {% if bookings %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-3">ID / Servicio</th>
+                            <th class="p-3">Organización / Cliente</th>
+                            <th class="p-3">Fecha / Horario</th>
+                            <th class="p-3">Monto</th>
+                            <th class="p-3">Estado</th>
+                            <th class="p-3 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                        {% for b in bookings %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">#{{ b.id }} - {{ b.service.title }}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">{{ b.organization.get_full_name|default:b.organization.username }}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span>{{ b.scheduled_date|date:"d/m/Y" }}</span>
+                                    <span class="text-slate-400 block text-[11px]">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }}</span>
+                                </td>
+                                <td class="p-3 font-bold text-slate-900">
+                                    ${{ b.service.price|floatformat:0 }}
+                                </td>
+                                <td class="p-3">
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block
+                                        {% if b.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
+                                        {% elif b.status == 'PAGADO_EN_CUSTODIA' or b.status == 'EN_EJECUCION' %}bg-blue-100 text-blue-800
+                                        {% elif b.status == 'ENTREGADO' %}bg-purple-100 text-purple-800
+                                        {% elif b.status == 'EN_DISPUTA' %}bg-rose-100 text-rose-800
+                                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                        {{ b.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-right">
+                                    <a href="{% url 'bookings:detail' pk=b.id %}" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold transition-colors">
+                                        Gestionar & Chat
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-500 italic py-4 text-center">No has recibido solicitudes de reserva aún.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-brand-600"></i> Mis Servicios Publicados
+            </h2>
+            <a href="{% url 'services:service_create' %}" class="text-xs font-bold text-brand-600 hover:underline">
+                + Crear Servicio
+            </a>
+        </div>
+
+        {% if services %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for service in services %}
+                    <div class="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">{{ service.category.name }}</span>
+                            <span class="font-black text-slate-900">${{ service.price|floatformat:0 }}</span>
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-900">{{ service.title }}</h3>
+                        <div class="flex items-center justify-end gap-2 text-xs pt-2 border-t border-slate-200">
+                            <a href="{% url 'services:service_edit' pk=service.pk %}" class="text-slate-600 hover:text-brand-600 font-bold">
+                                Editar
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-500 italic py-2">No tienes servicios creados.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

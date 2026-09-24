@@ -1,0 +1,87 @@
+<!-- -- PLANTILLA DE AUDITORÍA CONFIDENCIAL DE CALIDAD E INSIGNIAS CUALITATIVAS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Módulo de Auditoría de Calidad | Skilly Back-Office{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+        <div>
+            <div class="flex items-center gap-2 text-purple-700 font-bold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-lock text-purple-600"></i> Exclusivo para Administración Skilly
+            </div>
+            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-award text-amber-500"></i> Módulo Exclusivo de Auditoría de Calidad
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Visualización de evaluaciones confidenciales e insignias cualitativas recibidas por cada profesional</p>
+        </div>
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+            Volver a Dashboard Admin
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-ribbon text-purple-600"></i> Distribución Global de Insignias Cualitativas Asignadas
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {% for b in badge_tallies %}
+                <div class="p-4 rounded-xl border border-slate-200 bg-purple-50/40 flex items-center justify-between text-xs">
+                    <div class="space-y-0.5">
+                        <span class="font-bold text-slate-900 block flex items-center gap-1.5">
+                            <i class="fa-solid {{ b.icon }} text-purple-600"></i> {{ b.name }}
+                        </span>
+                        <span class="text-slate-500 text-[10px]">{{ b.description }}</span>
+                    </div>
+                    <span class="text-xl font-black text-purple-700 bg-purple-100 px-3 py-1 rounded-xl">
+                        {{ b.usage_count }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-user-check text-emerald-600"></i> Evaluaciones Privadas Recibidas por Profesional ({{ reviews|length }})
+        </h2>
+
+        {% if reviews %}
+            <div class="space-y-4">
+                {% for r in reviews %}
+                    <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-3 text-xs">
+                            <div>
+                                <span class="font-bold text-slate-900 text-sm block">Profesional Evaluado: {{ r.professional.get_full_name|default:r.professional.username }}</span>
+                                <span class="text-slate-500">Evaluado por Organización: {{ r.organization.get_full_name|default:r.organization.username }}</span>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <span class="text-slate-400 text-[11px]">{{ r.created_at|date:"d/m/Y H:i" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Cualidades e Insignias asignadas:</span>
+                            {% for badge in r.badges.all %}
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 inline-flex items-center gap-1">
+                                    <i class="fa-solid {{ badge.icon }}"></i> {{ badge.name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+
+                        {% if r.comments %}
+                            <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-xs text-slate-700 italic">
+                                "{{ r.comments }}"
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-500 italic py-4 text-center">No hay evaluaciones registradas aún.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

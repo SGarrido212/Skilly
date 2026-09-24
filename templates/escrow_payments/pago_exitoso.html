@@ -1,0 +1,71 @@
+<!-- -- PLANTILLA DE PAGO EXITOSO Y COMPROBANTE DE CUSTODIA -- -->
+{% extends 'base.html' %}
+
+{% block title %}Pago en Custodia Confirmado | Skilly Escrow{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-3xl shadow-xl space-y-6">
+        <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <div class="text-center space-y-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-block mb-1">
+                <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Fondos Retenidos en Garantía (Escrow)
+            </span>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">¡Pago Aprobado con Éxito por Webpay Plus!</h1>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+                Tu transacción ha sido procesada correctamente. Los fondos permanecerán seguros retenidos en la plataforma Skilly hasta la entrega y conformidad del servicio.
+            </p>
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4 shadow-md text-xs">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span class="font-bold text-slate-400">Orden de Compra: {{ transaction.buy_order }}</span>
+                <span class="font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-800">
+                    Aprobado (Código {{ transaction.transbank_response_code }})
+                </span>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="text-base font-bold text-white">{{ booking.service.title }}</h3>
+                <p class="text-slate-300">Profesional a cargo: {{ booking.professional.get_full_name|default:booking.professional.username }}</p>
+                <p class="text-slate-400">Fecha Agendada: {{ booking.scheduled_date|date:"d/m/Y" }} ({{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }})</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3 border-t border-slate-800 text-center">
+                <div class="bg-white/10 p-2.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px]">Monto Pagado</span>
+                    <span class="font-black text-emerald-400 text-sm">${{ transaction.total_amount|floatformat:0 }} CLP</span>
+                </div>
+
+                <div class="bg-white/10 p-2.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px]">Código Autorización</span>
+                    <span class="font-bold text-white text-xs">{{ transaction.authorization_code|default:"N/A" }}</span>
+                </div>
+
+                <div class="bg-white/10 p-2.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px]">Tipo de Pago</span>
+                    <span class="font-bold text-white text-xs">{{ transaction.payment_type_code|default:"VN" }}</span>
+                </div>
+
+                <div class="bg-white/10 p-2.5 rounded-xl">
+                    <span class="text-slate-400 block text-[10px]">Cuotas</span>
+                    <span class="font-bold text-white text-xs">{{ transaction.shares_number }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{% url 'bookings:detail' pk=booking.id %}" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-comments"></i>
+                <span>Ir al Chat & Detalle de la Reserva</span>
+            </a>
+            <a href="{% url 'services:marketplace' %}" class="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors text-center">
+                Volver al Marketplace
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

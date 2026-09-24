@@ -1,0 +1,82 @@
+<!-- -- PLANTILLA DE GESTIÓN DE DISPONIBILIDAD Y BLOQUES HORARIOS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Agenda | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-calendar-days text-brand-600"></i> Gestión de Agenda & Disponibilidad
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Genera tramos horarios en bloques configurables de 20 minutos para tus contrataciones</p>
+        </div>
+        <a href="{% url 'users:pro_dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+            Volver a Mi Panel
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle text-emerald-600"></i> Generar Bloques Horarios (20 min)
+        </h3>
+
+        <form method="post" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+            {% csrf_token %}
+            <div>
+                <label for="id_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Fecha</label>
+                <input type="date" name="date" id="id_date" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 font-medium text-xs">
+            </div>
+
+            <div>
+                <label for="id_start_time" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Hora Inicio</label>
+                <input type="time" name="start_time" id="id_start_time" required value="09:00" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 font-medium text-xs">
+            </div>
+
+            <div>
+                <label for="id_end_time" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Hora Fin</label>
+                <input type="time" name="end_time" id="id_end_time" required value="12:00" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 font-medium text-xs">
+            </div>
+
+            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow text-xs transition-all flex items-center justify-center gap-2">
+                <span>Generar Tramos</span>
+                <i class="fa-solid fa-bolt"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Tramos Horarios Configurados</h3>
+
+        {% if slots %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {% for slot in slots %}
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="font-bold text-xs text-slate-900 block">{{ slot.date|date:"D d/m/Y" }}</span>
+                            <span class="text-xs text-slate-600 font-medium bg-white px-2 py-0.5 rounded border border-slate-200">
+                                {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                            </span>
+                            <span class="block text-[10px] font-bold mt-1
+                                {% if slot.status == 'DISPONIBLE' %}text-emerald-700
+                                {% elif slot.status == 'PRE_RESERVADO' %}text-amber-700
+                                {% else %}text-slate-500{% endif %}">
+                                {{ slot.get_status_display }}
+                            </span>
+                        </div>
+
+                        {% if slot.status != 'OCUPADO' %}
+                            <a href="{% url 'availability:delete' pk=slot.pk %}" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Eliminar bloque">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-500 italic text-center py-4">No tienes bloques horarios configurados en tu agenda.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

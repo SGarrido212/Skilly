@@ -1,0 +1,68 @@
+<!-- -- PLANTILLA DE PAGO EN CUSTODIA Y WEBPAY PLUS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Checkout Pago en Custodia Escrow | Webpay Plus Transbank{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-3xl mx-auto mb-2">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Pasarela de Pago en Custodia Escrow</h2>
+            <p class="text-xs text-slate-500 font-medium">Procesamiento seguro mediante Webpay Plus Transbank en modo integración (Sandbox)</p>
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4 shadow-md">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span class="text-xs font-bold text-slate-400">Reserva #{{ booking.id }}</span>
+                <span class="text-xs font-bold text-red-400 bg-red-950 px-2.5 py-1 rounded-full border border-red-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-[11px]"></i> Webpay Plus Transbank
+                </span>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-white">{{ booking.service.title }}</h3>
+                <p class="text-xs text-slate-300">Profesional: {{ booking.professional.get_full_name|default:booking.professional.username }}</p>
+                <p class="text-xs text-slate-400">Fecha Agendada: {{ booking.scheduled_date|date:"d/m/Y" }} ({{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }})</p>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 space-y-2 text-xs">
+                <div class="flex justify-between text-slate-300">
+                    <span>Monto del Servicio:</span>
+                    <span>${{ total_amount|floatformat:0 }} CLP</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Comisión de Plataforma Skilly ({{ fee_percentage }}% Take Rate):</span>
+                    <span>${{ fee_amount|floatformat:0 }} CLP</span>
+                </div>
+                <div class="flex justify-between text-emerald-400 font-medium">
+                    <span>Monto Neto Acreditado a Profesional tras Finalizar:</span>
+                    <span>${{ pro_net|floatformat:0 }} CLP</span>
+                </div>
+                <div class="flex justify-between text-base font-black text-white pt-2 border-t border-slate-800">
+                    <span>Total a Cargar en Webpay:</span>
+                    <span class="text-emerald-400">${{ total_amount|floatformat:0 }} CLP</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex items-center gap-3">
+            <i class="fa-solid fa-lock text-emerald-600 text-2xl"></i>
+            <div>
+                <span class="font-bold block">Garantía Escrow Skilly</span>
+                <span>Los fondos se retienen de forma segura y no son transferidos al profesional hasta que confirmes la entrega conforme del servicio.</span>
+            </div>
+        </div>
+
+        <form action="{% url 'escrow_payments:webpay_init' booking_id=booking.id %}" method="post" class="space-y-4">
+            {% csrf_token %}
+            <button type="submit" class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-credit-card"></i>
+                <span>Pagar con Webpay Plus Transbank (${{ total_amount|floatformat:0 }} CLP)</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

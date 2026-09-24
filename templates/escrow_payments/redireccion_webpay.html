@@ -1,0 +1,46 @@
+<!-- -- PLANTILLA DE REDIRECCIÓN AUTOMÁTICA A WEBPAY PLUS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Redirigiendo a Webpay Plus | Skilly{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="glass-panel p-10 rounded-3xl shadow-2xl text-center max-w-md w-full space-y-6">
+        <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border-4 border-red-200 border-t-red-600 animate-spin"></div>
+            <i class="fa-solid fa-credit-card text-red-600 text-2xl"></i>
+        </div>
+
+        <div class="space-y-2">
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Conectando con Webpay Plus</h2>
+            <p class="text-xs text-slate-500 font-medium">Te estamos redirigiendo al servidor seguro de Transbank en modo integración (Sandbox)</p>
+        </div>
+
+        <div class="bg-slate-900 text-white p-4 rounded-2xl text-xs space-y-1 text-left">
+            <div class="flex justify-between text-slate-400">
+                <span>Reserva:</span>
+                <span class="font-bold text-white">#{{ booking.id }}</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+                <span>Monto a Cargar:</span>
+                <span class="font-black text-emerald-400">${{ total_amount|floatformat:0 }} CLP</span>
+            </div>
+        </div>
+
+        <form id="webpay-form" action="{{ webpay_url }}" method="post">
+            <input type="hidden" name="token_ws" value="{{ token_ws }}">
+            <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow-md transition-all">
+                Si no eres redirigido en 3 segundos, haz clic aquí <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            document.getElementById("webpay-form").submit();
+        }, 800);
+    });
+</script>
+{% endblock %}

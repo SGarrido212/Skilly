@@ -1,0 +1,127 @@
+<!-- -- PLANTILLA PRINCIPAL DEL MARKETPLACE DE SERVICIOS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Marketplace de Talentos y Servicios | Skilly{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-16 px-4 sm:px-6 lg:px-8 border-b border-indigo-900/50">
+    <div class="max-w-7xl mx-auto text-center space-y-6">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+            <i class="fa-solid fa-sparkles text-amber-400"></i> Marketplace Profesional Verificado
+        </span>
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
+            Contrata Talentos Senior con <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-indigo-300 to-emerald-400">Custodia Escrow</span> Garantizada
+        </h1>
+        <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
+            Reservas agendadas en bloques de 20 minutos, fondos protegidos hasta la entrega y mediación directa de disputas.
+        </p>
+
+        <form method="get" class="max-w-4xl mx-auto bg-white p-3 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-3 text-slate-800">
+            <div class="flex-1 flex items-center gap-3 px-3 w-full">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg"></i>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar por habilidad, título o nombre..." class="w-full py-2.5 outline-none font-medium text-slate-800 placeholder-slate-400">
+            </div>
+
+            <div class="w-full md:w-48 border-t md:border-t-0 md:border-l border-slate-200 px-3">
+                <select name="category" class="w-full py-2.5 outline-none font-medium text-slate-700 bg-transparent">
+                    <option value="">Todas las Categorías</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-full md:w-36 border-t md:border-t-0 md:border-l border-slate-200 px-3">
+                <input type="number" name="max_price" value="{{ max_price }}" placeholder="Precio máx $" class="w-full py-2.5 outline-none font-medium text-slate-700 placeholder-slate-400">
+            </div>
+
+            <button type="submit" class="w-full md:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+                <span>Buscar</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+        <a href="{% url 'services:marketplace' %}" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors {% if not selected_category %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
+            Todos
+        </a>
+        {% for cat in categories %}
+            <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
+                <i class="fa-solid {{ cat.icon }}"></i>
+                <span>{{ cat.name }}</span>
+            </a>
+        {% endfor %}
+    </div>
+
+    {% if services %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for service in services %}
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+                    <div class="p-6 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1.5">
+                                <i class="fa-solid {{ service.category.icon }}"></i> {{ service.category.name }}
+                            </span>
+                            <span class="text-lg font-extrabold text-slate-900">
+                                ${{ service.price|floatformat:0 }} <span class="text-xs font-normal text-slate-500">CLP/USD</span>
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-2">
+                            <a href="{% url 'services:service_detail' pk=service.pk %}">{{ service.title }}</a>
+                        </h3>
+
+                        <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                            {{ service.description }}
+                        </p>
+
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Entregables clave:</span>
+                            <p class="text-xs font-medium text-slate-700 line-clamp-2">
+                                {{ service.deliverables }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                        <a href="{% url 'users:public_pro_profile' slug=service.professional.professional_profile.slug %}" class="flex items-center gap-3 group/pro">
+                            <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm shadow-sm group-hover/pro:ring-2 group-hover/pro:ring-brand-500 transition-all">
+                                {{ service.professional.first_name|first|default:service.professional.username|first|upper }}
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-900 group-hover/pro:text-brand-600 transition-colors flex items-center gap-1">
+                                    {{ service.professional.get_full_name|default:service.professional.username }}
+                                    {% if service.professional.professional_profile.validation_status == 'VALIDADO' %}
+                                        <i class="fa-solid fa-circle-check text-emerald-500 text-xs" title="Profesional Validado por Skilly"></i>
+                                    {% endif %}
+                                </span>
+                                <span class="block text-[11px] text-slate-500 font-medium truncate max-w-[140px]">
+                                    {{ service.professional.professional_profile.profession|default:"Profesional Skilly" }}
+                                </span>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'services:service_detail' pk=service.pk %}" class="px-3 py-1.5 bg-white hover:bg-brand-600 text-brand-600 hover:text-white border border-brand-200 hover:border-brand-600 rounded-lg text-xs font-bold transition-all shadow-sm">
+                            Ver & Reservar
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center max-w-lg mx-auto space-y-4 shadow-sm">
+            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800">No se encontraron servicios</h3>
+            <p class="text-xs text-slate-500">Prueba con otros términos de búsqueda o selecciona otra categoría.</p>
+            <a href="{% url 'services:marketplace' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-xl shadow">
+                Ver Todos los Servicios
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

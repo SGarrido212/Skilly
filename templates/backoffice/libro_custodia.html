@@ -1,0 +1,68 @@
+<!-- -- PLANTILLA DE LIBRO MAYOR DE AUDITORÍA DE CUSTODIA (ESCROW LEDGER) -- -->
+{% extends 'base.html' %}
+
+{% block title %}Libro Mayor de Custodia Escrow | Skilly Back-Office{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-vault text-blue-600"></i> Libro Mayor de Auditoría Custodia (Escrow Ledger)
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Registro histórico detallado de transacciones, estados de retención y comisiones de plataforma</p>
+        </div>
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+            Volver a Dashboard Admin
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        {% if transactions %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-3">ID Transacción</th>
+                            <th class="p-3">Reserva</th>
+                            <th class="p-3">Cliente / Profesional</th>
+                            <th class="p-3">Monto Total</th>
+                            <th class="p-3">Comisión Skilly (15%)</th>
+                            <th class="p-3">Neto Pro</th>
+                            <th class="p-3">Estado Custodia</th>
+                            <th class="p-3">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                        {% for t in transactions %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-3 font-extrabold text-slate-900">{{ t.transaction_id }}</td>
+                                <td class="p-3">Reserva #{{ t.booking.id }}</td>
+                                <td class="p-3">
+                                    <span class="block font-bold text-slate-900">Org: {{ t.booking.organization.username }}</span>
+                                    <span class="block text-slate-400 text-[11px]">Pro: {{ t.booking.professional.username }}</span>
+                                </td>
+                                <td class="p-3 font-black text-slate-900">${{ t.total_amount|floatformat:0 }}</td>
+                                <td class="p-3 font-bold text-purple-700">${{ t.skilly_fee_amount|floatformat:0 }}</td>
+                                <td class="p-3 font-bold text-emerald-700">${{ t.net_professional_amount|floatformat:0 }}</td>
+                                <td class="p-3">
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold
+                                        {% if t.escrow_status == 'LIBERADO' %}bg-emerald-100 text-emerald-800
+                                        {% elif t.escrow_status == 'RETENIDO' %}bg-blue-100 text-blue-800
+                                        {% elif t.escrow_status == 'REEMBOLSADO' %}bg-amber-100 text-amber-800
+                                        {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                        {{ t.get_escrow_status_display }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-slate-500">{{ t.created_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-500 italic py-4 text-center">No hay registros transaccionales en la custodia.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

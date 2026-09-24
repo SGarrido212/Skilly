@@ -1,0 +1,51 @@
+<!-- -- PLANTILLA DE PAGO RECHAZADO O ANULADO -- -->
+{% extends 'base.html' %}
+
+{% block title %}Pago Rechazado o Anulado | Skilly Escrow{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-3xl shadow-xl space-y-6">
+        <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mx-auto">
+            <i class="fa-solid fa-circle-xmark"></i>
+        </div>
+
+        <div class="text-center space-y-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200 inline-block mb-1">
+                Transacción No Completada
+            </span>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">El Pago no Pudo ser Procesado por Webpay</h1>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+                La transacción fue rechazada por el banco emisor o anulada durante el proceso en el formulario de Transbank Webpay Plus.
+            </p>
+        </div>
+
+        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-3 text-xs text-slate-700">
+            <div class="flex justify-between border-b border-slate-200 pb-2">
+                <span class="font-bold text-slate-500">Reserva:</span>
+                <span class="font-bold text-slate-900">#{{ booking.id }} - {{ booking.service.title }}</span>
+            </div>
+
+            <div class="flex justify-between border-b border-slate-200 pb-2">
+                <span class="font-bold text-slate-500">Orden de Compra:</span>
+                <span class="font-mono font-bold text-slate-900">{{ transaction.buy_order|default:"N/A" }}</span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="font-bold text-slate-500">Código de Respuesta Transbank:</span>
+                <span class="font-bold text-rose-600">{{ transaction.transbank_response_code|default:"Anulado por usuario" }}</span>
+            </div>
+        </div>
+
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{% url 'escrow_payments:checkout' booking_id=booking.id %}" class="w-full sm:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>Reintentar Pago en Webpay</span>
+            </a>
+            <a href="{% url 'services:marketplace' %}" class="w-full sm:w-auto px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors text-center">
+                Volver al Marketplace
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

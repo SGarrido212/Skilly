@@ -1,0 +1,45 @@
+<!-- -- PLANTILLA DE FORMULARIO DE APERTURA DE DISPUTA -- -->
+{% extends 'base.html' %}
+
+{% block title %}Reportar Disputa / Problema | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mx-auto mb-2">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Reportar Problema o Disputa</h2>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+                Los fondos en custodia quedarán congelados de inmediato mientras el equipo de mediación de Skilly Back-Office revisa el caso.
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="{{ form.reason.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Motivo Detallado (Mínimo 50 caracteres)
+                </label>
+                {{ form.reason }}
+                {% for error in form.reason.errors %}
+                    <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label for="{{ form.evidence.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Evidencia Adjunta (Capturas o PDF)
+                </label>
+                {{ form.evidence }}
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm rounded-xl shadow-md transition-all">
+                Abrir Proceso de Mediación en Back-Office <i class="fa-solid fa-shield-halved ml-2"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

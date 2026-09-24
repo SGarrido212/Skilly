@@ -1,0 +1,44 @@
+<!-- -- PLANTILLA DE REGISTRO DE USUARIOS -- -->
+{% extends 'base.html' %}
+
+{% block title %}Crear Cuenta | Skilly{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-lg w-full glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+        <div class="text-center">
+            <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Únete a la Plataforma Skilly</h2>
+            <p class="text-sm text-slate-500 mt-1">Selecciona tu rol y comienza a ofrecer o contratar servicios</p>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-xs text-slate-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 mt-4">
+                Crear Mi Cuenta en Skilly <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
+        </form>
+
+        <div class="pt-4 border-t border-slate-200 text-center text-xs text-slate-600">
+            ¿Ya tienes una cuenta? <a href="{% url 'users:login' %}" class="font-bold text-brand-600 hover:underline">Inicia sesión</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

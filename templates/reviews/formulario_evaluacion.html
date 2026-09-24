@@ -1,0 +1,70 @@
+<!-- -- FORMULARIO DE EVALUACIÓN CUALITATIVA DE SERVICIO CONFIDENCIAL -- -->
+{% extends 'base.html' %}
+
+{% block title %}Evaluación Privada de Calidad | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+            <div class="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto mb-2">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-900 border border-purple-200 inline-block mb-1">
+                <i class="fa-solid fa-lock text-purple-600"></i> Evaluación 100% Confidencial - Exclusivo Back-Office
+            </span>
+            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Evaluación Cualitativa del Profesional</h2>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+                Selecciona las cualidades destacadas del profesional o agrega una cualidad extra. Esta información es confidencial y no se muestra públicamente.
+            </p>
+        </div>
+
+        <!-- -- INFORMACIÓN DE LA RESERVA FINALIZADA -- -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1">
+            <span class="font-bold text-slate-900 block">Reserva #{{ booking.id }}: {{ booking.service.title }}</span>
+            <span>Profesional a cargo: {{ booking.professional.get_full_name|default:booking.professional.username }}</span>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- -- SELECCIÓN DE CUALIDADES PREDEFINIDAS -- -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                    Selecciona las Cualidades Destacadas
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200 max-h-48 overflow-y-auto">
+                    {{ form.badges }}
+                </div>
+            </div>
+
+            <!-- -- CAMPO PARA AGREGAR CUALIDAD EXTRA PERSONALIZADA -- -->
+            <div>
+                <label for="{{ form.custom_badge.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    {{ form.custom_badge.label }}
+                </label>
+                {{ form.custom_badge }}
+                <p class="text-[11px] text-slate-500 mt-1">Escribe una cualidad adicional si no aparece en el listado superior.</p>
+            </div>
+
+            <!-- -- COMENTARIOS CONFIDENCIALES -- -->
+            <div>
+                <label for="{{ form.comments.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Comentarios Confidenciales (Máx 500 caracteres)
+                </label>
+                {{ form.comments }}
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-bold">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm rounded-xl shadow-md transition-all">
+                Enviar Evaluación Cualitativa a Back-Office <i class="fa-solid fa-paper-plane ml-2"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

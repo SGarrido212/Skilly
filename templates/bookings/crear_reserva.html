@@ -1,0 +1,165 @@
+<!-- -- PLANTILLA DE AGENDAMIENTO RÁPIDO Y CREACIÓN DE RESERVA -- -->
+{% extends 'base.html' %}
+
+{% block title %}Reserva Rápida & Agendamiento | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+            <div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-brand-100 text-brand-800 inline-block mb-1">
+                    <i class="fa-solid fa-bolt text-amber-500 mr-1"></i> Reserva Rápida (Guest Checkout)
+                </span>
+                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Confirmar Reserva de Servicio</h2>
+                <p class="text-xs text-slate-500 mt-1">Completa los datos de tu empresa y requerimientos para iniciar el proceso</p>
+            </div>
+
+            {% if not user.is_authenticated %}
+                <div class="text-xs bg-slate-100 p-3 rounded-xl border border-slate-200 text-slate-700 font-medium">
+                    ¿Ya tienes una cuenta en Skilly?
+                    <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}" class="font-bold text-brand-600 hover:underline block sm:inline mt-1 sm:mt-0">
+                        Inicia sesión aquí <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-xs bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-900 font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    <span>Precargado desde tu cuenta: {{ user.get_full_name|default:user.username }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 rounded-2xl space-y-4 shadow-md">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ service.category.name }}</span>
+                <span class="text-2xl font-black text-emerald-400">${{ service.price|floatformat:0 }} CLP/USD</span>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="text-xl font-bold text-white">{{ service.title }}</h3>
+                <p class="text-xs text-slate-300">Profesional a cargo: {{ service.professional.get_full_name|default:service.professional.username }}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-day text-brand-400 text-sm"></i>
+                    <span>Fecha: <strong class="text-white">{{ slot.date|date:"D d/m/Y" }}</strong></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-amber-400 text-sm"></i>
+                    <span>Bloque Horario: <strong class="text-white">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</strong> (20 min)</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <input type="hidden" name="slot_id" value="{{ slot.id }}">
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <i class="fa-solid fa-building text-brand-600"></i> Datos de Contacto y Organización
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.first_name.label }}
+                        </label>
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.last_name.label }}
+                        </label>
+                        {{ form.last_name }}
+                        {% for error in form.last_name.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.email.label }}
+                        </label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.phone.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.phone.label }}
+                        </label>
+                        {{ form.phone }}
+                        {% for error in form.phone.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.company_name.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.company_name.label }}
+                        </label>
+                        {{ form.company_name }}
+                        {% for error in form.company_name.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.company_rut.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            {{ form.company_rut.label }}
+                        </label>
+                        {{ form.company_rut }}
+                        {% for error in form.company_rut.errors %}
+                            <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-2">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <i class="fa-solid fa-file-pen text-brand-600"></i> Detalle del Proyecto & Notas
+                </h3>
+
+                <div>
+                    <label for="{{ form.project_requirements.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        {{ form.project_requirements.label }}
+                    </label>
+                    {{ form.project_requirements }}
+                    {% for error in form.project_requirements.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-3">
+                <i class="fa-solid fa-clock text-amber-600 text-2xl"></i>
+                <div>
+                    <span class="font-bold block">Bloqueo Temporal de 20 Minutos</span>
+                    <span>Al confirmar, el bloque horario se reservará en exclusiva durante 20 minutos para realizar el pago en la custodia Escrow.</span>
+                </div>
+            </div>
+
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
+                <a href="{% url 'services:service_detail' pk=service.pk %}" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-7 py-3 bg-brand-600 hover:bg-brand-700 text-white font-extrabold rounded-xl shadow-md hover:shadow-lg text-sm transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <span>Pre-reservar & Ir a Pago Escrow</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

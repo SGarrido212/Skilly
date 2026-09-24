@@ -1,0 +1,197 @@
+<!-- -- PLANTILLA DE DETALLE DE RESERVA Y SALA DE CHAT INTERNO -- -->
+{% extends 'base.html' %}
+
+{% block title %}Reserva #{{ booking.id }} | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3 mb-1">
+                <span class="text-xs font-bold text-slate-400">Reserva #{{ booking.id }}</span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold
+                    {% if booking.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
+                    {% elif booking.status == 'PAGADO_EN_CUSTODIA' or booking.status == 'EN_EJECUCION' %}bg-blue-100 text-blue-800
+                    {% elif booking.status == 'ENTREGADO' %}bg-purple-100 text-purple-800
+                    {% elif booking.status == 'EN_DISPUTA' %}bg-rose-100 text-rose-800
+                    {% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ booking.get_status_display }}
+                </span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">{{ booking.service.title }}</h1>
+            <p class="text-xs text-slate-500 font-medium">Contratado por {{ booking.organization.get_full_name|default:booking.organization.username }} a {{ booking.professional.get_full_name|default:booking.professional.username }}</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-2xl font-black text-slate-900">${{ booking.service.price|floatformat:0 }} <span class="text-xs font-normal text-slate-500">CLP/USD</span></span>
+        </div>
+    </div>
+
+    {% if is_cancellation_warning and booking.status != 'FINALIZADO' and booking.status != 'CANCELADO' %}
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-3 text-xs text-amber-900">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl"></i>
+            <div>
+                <span class="font-bold block">Política de Cancelación < 24 Horas</span>
+                <span>El evento agendado está a menos de 24 horas de iniciar ({{ booking.scheduled_date|date:"d/m/Y" }} {{ booking.start_time|time:"H:i" }}). En caso de cancelar, aplicará penalización según los términos de la plataforma.</span>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if payment %}
+        <div class="bg-emerald-950 text-white rounded-2xl p-6 border border-emerald-800/60 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Estado del Pago Escrow (Custodia)</span>
+                    <h3 class="text-xl font-bold text-white">{{ payment.get_escrow_status_display }}</h3>
+                    <p class="text-xs text-slate-300">ID Transacción: {{ payment.transaction_id }} | Pasarela: {{ payment.payment_gateway }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6 text-center text-xs">
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                    <span class="text-slate-400 block text-[10px]">Monto Total</span>
+                    <span class="font-bold text-white text-sm">${{ payment.total_amount|floatformat:0 }}</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                    <span class="text-slate-400 block text-[10px]">Comisión Skilly ({{ payment.skilly_fee_percentage }}%)</span>
+                    <span class="font-bold text-amber-300 text-sm">${{ payment.skilly_fee_amount|floatformat:0 }}</span>
+                </div>
+                <div class="bg-white/10 p-3 rounded-xl border border-white/10">
+                    <span class="text-slate-400 block text-[10px]">Neto Profesional</span>
+                    <span class="font-bold text-emerald-300 text-sm">${{ payment.net_professional_amount|floatformat:0 }}</span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Requerimientos del Proyecto</h3>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 whitespace-pre-line">
+                    {{ booking.project_requirements }}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-2 text-xs">
+                    <div>
+                        <span class="font-bold text-slate-500 block">Fecha & Horario Agendado:</span>
+                        <span class="font-extrabold text-slate-900">{{ booking.scheduled_date|date:"D d/m/Y" }} de {{ booking.start_time|time:"H:i" }} a {{ booking.end_time|time:"H:i" }}</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-500 block">Entregables Esperados:</span>
+                        <span class="text-slate-700">{{ booking.service.deliverables }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-flag-checkered text-brand-600"></i> Acciones del Ciclo de Vida
+                </h3>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    {% if user == booking.professional %}
+                        {% if booking.status == 'PENDIENTE' %}
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='ACEPTADA' %}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-check mr-1"></i> Aceptar Solicitud
+                            </a>
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='RECHAZADA' %}" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-xmark mr-1"></i> Rechazar
+                            </a>
+                        {% elif booking.status == 'PAGADO_EN_CUSTODIA' or booking.status == 'ACEPTADA' %}
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='EN_EJECUCION' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-play mr-1"></i> Marcar "En Ejecución"
+                            </a>
+                        {% elif booking.status == 'EN_EJECUCION' %}
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='ENTREGADO' %}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-paper-plane mr-1"></i> Marcar "Entregado"
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if user == booking.organization %}
+                        {% if booking.status == 'PRE_RESERVADA' %}
+                            <a href="{% url 'escrow_payments:checkout' booking_id=booking.id %}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-credit-card mr-1"></i> Realizar Pago en Custodia (Escrow)
+                            </a>
+                        {% endif %}
+
+                        {% if booking.status == 'ENTREGADO' or booking.status == 'EN_EJECUCION' or booking.status == 'PAGADO_EN_CUSTODIA' %}
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='FINALIZADO' %}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow transition-all" onclick="return confirm('¿Confirmas que el servicio fue entregado a satisfacción? Esto liberará los fondos en custodia al profesional.');">
+                                <i class="fa-solid fa-circle-check mr-1"></i> Confirmar Entrega & Liberar Pago Escrow
+                            </a>
+                            <a href="{% url 'disputes:create' booking_id=booking.id %}" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow transition-all">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> Reportar Problema / Disputa
+                            </a>
+                        {% endif %}
+
+                        {% if booking.status != 'FINALIZADO' and booking.status != 'CANCELADO' and booking.status != 'EN_DISPUTA' %}
+                            <a href="{% url 'bookings:update_status' pk=booking.id new_status='CANCELADO' %}" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition-all" onclick="return confirm('¿Estás seguro de cancelar esta reserva?');">
+                                Cancelar Reserva
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if review %}
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                            <i class="fa-solid fa-award text-amber-600 mr-1"></i> Evaluado Cualitativamente (Confidencial Admin)
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-lg flex flex-col h-[500px] overflow-hidden">
+                <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-brand-400"></i>
+                        <span class="font-bold text-xs">Chat Interno Trazable</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Auditable por Skilly</span>
+                </div>
+
+                <div class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50">
+                    {% if chat_messages %}
+                        {% for msg in chat_messages %}
+                            <div class="flex flex-col {% if msg.sender == user %}items-end{% else %}items-start{% endif %}">
+                                <div class="max-w-[85%] p-3 rounded-2xl text-xs font-medium space-y-1 shadow-2xs
+                                    {% if msg.sender == user %}bg-brand-600 text-white rounded-br-none
+                                    {% else %}bg-white text-slate-800 border border-slate-200 rounded-bl-none{% endif %}">
+                                    <span class="font-bold text-[10px] block opacity-80">
+                                        {{ msg.sender.get_full_name|default:msg.sender.username }}
+                                    </span>
+                                    <p>{{ msg.message }}</p>
+                                    {% if msg.attachment %}
+                                        <a href="{{ msg.attachment.url }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] underline font-bold mt-1 opacity-90">
+                                            <i class="fa-solid fa-paperclip"></i> Ver archivo adjunto
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <span class="text-[10px] text-slate-400 mt-0.5 px-1">{{ msg.timestamp|date:"H:i" }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-xs text-slate-400 italic text-center py-12">No hay mensajes en este chat aún.</p>
+                    {% endif %}
+                </div>
+
+                <form action="{% url 'bookings:send_message' pk=booking.id %}" method="post" enctype="multipart/form-data" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                    {% csrf_token %}
+                    <input type="text" name="message" required placeholder="Escribe un mensaje..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 font-medium text-xs text-slate-800">
+                    <label for="id_attachment" class="p-2.5 text-slate-400 hover:text-brand-600 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors" title="Adjuntar archivo">
+                        <i class="fa-solid fa-paperclip text-sm"></i>
+                    </label>
+                    <input type="file" name="attachment" id="id_attachment" class="hidden">
+                    <button type="submit" class="p-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow text-xs transition-colors">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

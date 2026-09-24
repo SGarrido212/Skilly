@@ -1,0 +1,88 @@
+<!-- -- PLANTILLA DE PANEL DE CONTRATACIONES PARA ORGANIZACIONES -- -->
+{% extends 'base.html' %}
+
+{% block title %}Panel de Contrataciones | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-extrabold text-slate-900">Panel de Contrataciones: {{ profile.company_name|default:user.username }}</h1>
+            <p class="text-xs text-slate-500 font-medium">Gestión de proyectos contratados, pagos en custodia y estado de servicios</p>
+        </div>
+        <a href="{% url 'services:marketplace' %}" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow transition-all flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass"></i> Buscar Talentos
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-briefcase text-brand-600"></i> Servicios Contratados & Proyectos
+        </h2>
+
+        {% if bookings %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-3">Servicio / Profesional</th>
+                            <th class="p-3">Fecha Agendada</th>
+                            <th class="p-3">Monto & Escrow</th>
+                            <th class="p-3">Estado</th>
+                            <th class="p-3 text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                        {% for b in bookings %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">{{ b.service.title }}</span>
+                                    <span class="text-slate-500 text-[11px]">Pro: {{ b.professional.get_full_name|default:b.professional.username }}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span>{{ b.scheduled_date|date:"d/m/Y" }}</span>
+                                    <span class="text-slate-400 block text-[11px]">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }}</span>
+                                </td>
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">${{ b.service.price|floatformat:0 }}</span>
+                                    {% if b.payment_transaction %}
+                                        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                                            Custodia: {{ b.payment_transaction.get_escrow_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full inline-block">
+                                            Pago Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-3">
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block
+                                        {% if b.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
+                                        {% elif b.status == 'PAGADO_EN_CUSTODIA' or b.status == 'EN_EJECUCION' %}bg-blue-100 text-blue-800
+                                        {% elif b.status == 'ENTREGADO' %}bg-purple-100 text-purple-800
+                                        {% elif b.status == 'EN_DISPUTA' %}bg-rose-100 text-rose-800
+                                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                        {{ b.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-right">
+                                    <a href="{% url 'bookings:detail' pk=b.id %}" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold transition-colors">
+                                        Ver Detalle & Chat
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-8 text-center space-y-3">
+                <p class="text-xs text-slate-500 italic">Aún no has realizado contrataciones de servicios.</p>
+                <a href="{% url 'services:marketplace' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white font-bold text-xs rounded-xl shadow">
+                    Explorar Talentos en Marketplace
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
