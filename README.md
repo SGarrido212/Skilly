@@ -42,26 +42,6 @@ Plataforma web disenada para conectar Profesionales Independientes con Organizac
 
 ---
 
-## Estructura del Proyecto
-
-Skilly/
-├── apps/
-│   ├── availability/      # Gestion de calendarios y bloques de 20 min
-│   ├── backoffice/        # Panel administrativo y auditoria de calidad
-│   ├── benefits/          # Catalogo de beneficios y alianzas del ecosistema
-│   ├── bookings/          # Flujo de contratacion, reservas y chat interno
-│   ├── disputes/          # Tickets de mediacion y congelamiento de fondos
-│   ├── escrow_payments/   # Transacciones, Webpay Plus y pagos en custodia
-│   ├── reviews/           # Evaluaciones internas por emblemas cualitativos
-│   ├── services/          # Catalogo de servicios y categorias
-│   └── users/             # Modelos de usuario, roles y perfiles
-├── skilly_project/        # Configuracion central (settings, urls, wsgi)
-├── templates/             # Plantillas HTML del sistema
-├── static/                # Archivos estaticos (CSS, JS, logos)
-├── manage.py
-└── requirements.txt
-
----
 
 ## Instalacion y Puesta en Marcha
 
