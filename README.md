@@ -1,32 +1,32 @@
 # Skilly - Plataforma de Marketplace y Custodia de Servicios (MVP)
 
-Plataforma web disenada para conectar Profesionales Independientes con Organizaciones, incorporando gestion de agenda horaria, contratacion agil (Guest Checkout) y procesamiento de pagos en garantia (Escrow) mediante Webpay Plus (Transbank).
+Plataforma web disenada para conectar Profesionales Independientes con Organizaciones, incorporando gestion de agenda horaria, contratacion agil (Guest Checkout) y procesamiento de pagos en garantia mediante Webpay Plus (Transbank).
 
 ---
 
 ## Caracteristicas Principales
 
-### 1. Gestion de Usuarios y Perfiles (users)
+### 1. Gestion de Usuarios y Perfiles
 - Roles diferenciados: Profesional Independiente, Organizacion y Administrador Skilly.
 - Validacion de Identidad: Carga de documentos de acreditacion profesional y verificacion desde el Back-office.
-- Perfil SaaS Directo: Generacion de URL amigable (/pro/<slug>) para agendamiento directo.
+- Perfil SaaS Directo: Generacion de URL amigable para agendamiento directo.
 
-### 2. Catalogo y Disponibilidad (services & availability)
+### 2. Catalogo y Disponibilidad
 - Publicacion de paquetes de servicios con descripcion, entregables y tarifas.
-- Configuracion de agenda semanal en bloques de tiempo (tramos de 20 minutos).
+- Configuracion de agenda semanal en bloques de tiempo.
 - Bloqueo temporal preventivo para evitar colisiones en reservas concurrentes.
 
-### 3. Agendamiento y Flujo de Reserva (bookings)
+### 3. Agendamiento y Flujo de Reserva
 - Guest Checkout: Permite a clientes externos u organizaciones agendar sin necesidad de iniciar sesion previa.
 - Estados trazables de la reserva: PENDIENTE, PRE_RESERVADA, ACEPTADA, PAGADO_EN_CUSTODIA, EN_EJECUCION, FINALIZADO, EN_DISPUTA, CANCELADO.
 - Mensajeria interna privada y segura asociada a la reserva confirmada.
 
-### 4. Pagos en Custodia / Escrow (escrow_payments)
+### 4. Pagos en Custodia
 - Integracion con Webpay Plus (Transbank SDK) en ambiente de integracion.
 - Retencion temporal de fondos en garantia hasta la conformidad del servicio ejecutado.
 - Calculo automatico de comisiones operativas (Take Rate).
 
-### 5. Control de Calidad y Resolucion de Conflictos (reviews, disputes, backoffice)
+### 5. Control de Calidad y Resolucion de Conflictos
 - Evaluacion interna: Asignacion de insignias cualitativas visibles exclusivamente en el Back-office para control de calidad interna.
 - Modulo de Disputas: Congelamiento de fondos y herramientas de arbitraje para el Administrador.
 - Panel administrativo para metricas financieras, validacion de antecedentes y transacciones.
@@ -51,7 +51,7 @@ cd Skilly
 
 ### 2. Crear y activar el entorno virtual
 
-- En Windows (PowerShell):
+- En Windows:
   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
   python -m venv venv
   .\venv\Scripts\Activate.ps1
