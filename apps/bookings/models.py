@@ -47,6 +47,12 @@ class Booking(models.Model):
     
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=STATUS_PENDIENTE)
     
+    skilly_staff_supervision_requested = models.BooleanField(
+        default=False,
+        verbose_name="Supervisión Skilly Solicitada",
+        help_text="Indica si el equipo de Skilly asistirá como supervisor/observador a esta primera sesión."
+    )
+    
     # Policy tracking & alert calculations
     cancellation_penalty_applies = models.BooleanField(default=False, help_text="True si se canceló con menos de 24h de anticipación")
     

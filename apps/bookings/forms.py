@@ -39,20 +39,20 @@ class BookingCreateForm(forms.ModelForm):
     )
     company_name = forms.CharField(
         max_length=150,
-        required=True,
-        label="Nombre de la Empresa *",
+        required=False,
+        label="Nombre de la Empresa (Opcional)",
         widget=forms.TextInput(attrs={
             'class': 'w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-800',
-            'placeholder': 'TechCorp SpA'
+            'placeholder': 'TechCorp SpA (Opcional)'
         })
     )
     company_rut = forms.CharField(
         max_length=50,
         required=False,
-        label="RUT / Identificación Fiscal de la Empresa",
+        label="RUT / Identificación Fiscal de la Empresa (Opcional)",
         widget=forms.TextInput(attrs={
             'class': 'w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-800',
-            'placeholder': '76.123.456-7'
+            'placeholder': '76.123.456-7 (Opcional)'
         })
     )
 

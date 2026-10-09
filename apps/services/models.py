@@ -23,6 +23,20 @@ class Category(models.Model):
 
 
 class Service(models.Model):
+    STATUS_BORRADOR = 'BORRADOR'
+    STATUS_EN_REVISION = 'EN_REVISION'
+    STATUS_APROBADO_CON_MODIFICACIONES = 'APROBADO_CON_MODIFICACIONES'
+    STATUS_PUBLICADO = 'PUBLICADO'
+    STATUS_RECHAZADO = 'RECHAZADO'
+
+    STATUS_CHOICES = [
+        (STATUS_BORRADOR, 'Borrador'),
+        (STATUS_EN_REVISION, 'En Revisión por Skilly'),
+        (STATUS_APROBADO_CON_MODIFICACIONES, 'Aprobado con Modificaciones'),
+        (STATUS_PUBLICADO, 'Publicado'),
+        (STATUS_RECHAZADO, 'Rechazado'),
+    ]
+
     professional = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -38,8 +52,23 @@ class Service(models.Model):
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(1.00)],
-        verbose_name="Tarifa ($ USD / CLP)"
+        verbose_name="Tarifa ($ CLP)"
     )
+    original_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name="Precio Original Solicitado ($ CLP)"
+    )
+    status = models.CharField(
+        max_length=35,
+        choices=STATUS_CHOICES,
+        default=STATUS_PUBLICADO,
+        verbose_name="Estado de Publicación"
+    )
+    modified_by_admin = models.BooleanField(default=False, verbose_name="Modificado por Administración")
+    admin_feedback = models.TextField(blank=True, null=True, verbose_name="Retroalimentación Administrativa")
     is_active = models.BooleanField(default=True, verbose_name="Servicio Activo")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -48,3 +77,4 @@ class Service(models.Model):
 
     def __str__(self):
         return f"{self.title} - ${self.price:,.0f}"
+

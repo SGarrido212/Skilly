@@ -57,12 +57,9 @@
             <div class="flex items-center justify-between h-20">
                 <!-- Logo & Brand -->
                 <div class="flex items-center gap-3">
-                    <a href="{% url 'services:marketplace' %}" class="flex items-center gap-3 group">
+                    <a href="{% url 'services:marketplace' %}" class="flex items-center group py-1">
                         {% load static %}
-                        <img src="{% static 'skilly-logo.png' %}" alt="Skilly Logo" class="h-10 w-auto group-hover:scale-105 transition-transform duration-200" onerror="this.onerror=null; this.src='https://placehold.co/120x40/4f46e5/ffffff?text=Skilly';">
-                        <span class="font-extrabold text-2xl tracking-tight text-slate-900 group-hover:text-brand-600 transition-colors">
-                            Skilly<span class="text-brand-600 font-black">.</span>
-                        </span>
+                        <img src="{% static 'skilly-logo.png' %}" alt="Skilly Logo" class="h-14 sm:h-16 max-h-16 w-auto object-contain group-hover:scale-105 transition-transform duration-200" onerror="this.onerror=null; this.src='https://placehold.co/180x60/4f46e5/ffffff?text=Skilly';">
                     </a>
                     <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                         <i class="fa-solid font-bold fa-shield-halved text-emerald-600"></i> Escrow Protected
@@ -166,9 +163,8 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-2xl tracking-tight text-white">
-                            Skilly<span class="text-brand-500">.</span>
-                        </span>
+                        {% load static %}
+                        <img src="{% static 'skilly-logo.png' %}" alt="Skilly Logo" class="h-12 sm:h-14 w-auto object-contain brightness-110">
                     </div>
                     <p class="text-xs text-slate-400 leading-relaxed">
                         La plataforma MVP líder para contratación de profesionales calificados con custodia garantizada de pagos (Escrow), agendamiento en bloques de 20 minutos y mediación de disputas.

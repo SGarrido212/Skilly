@@ -42,8 +42,8 @@ def booking_create_view(request, service_id):
                 first_name = form.cleaned_data['first_name'].strip()
                 last_name = form.cleaned_data['last_name'].strip()
                 phone = form.cleaned_data.get('phone', '').strip()
-                company_name = form.cleaned_data['company_name'].strip()
-                company_rut = form.cleaned_data.get('company_rut', '').strip() or 'PENDIENTE'
+                company_name = form.cleaned_data.get('company_name', '').strip() or f"Particular ({first_name} {last_name})".strip()
+                company_rut = form.cleaned_data.get('company_rut', '').strip() or 'S/I'
 
                 existing_user = CustomUser.objects.filter(email=email).first()
                 if existing_user:

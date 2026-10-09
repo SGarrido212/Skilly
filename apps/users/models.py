@@ -66,6 +66,11 @@ class ProfessionalProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="Foto de Perfil")
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Tarifa por Hora Promedio ($)")
 
+    admin_notes = models.TextField(blank=True, default='', verbose_name="Notas Internas de Administración (Solo Skilly)")
+    expelled_at = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Expulsión")
+    is_first_session_completed = models.BooleanField(default=False, verbose_name="Primera Sesión Completada")
+    strikes_count = models.PositiveSmallIntegerField(default=0, verbose_name="Contador de Amonestaciones (Strikes)")
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(f"{self.user.first_name}-{self.user.last_name}") or slugify(self.user.username)
@@ -81,6 +86,20 @@ class ProfessionalProfile(models.Model):
         return f"Perfil Pro: {self.profession} - {self.user.get_full_name() or self.user.username}"
 
 
+class StrikeRecord(models.Model):
+    professional = models.ForeignKey(ProfessionalProfile, on_delete=models.CASCADE, related_name='strike_records')
+    reason = models.TextField(verbose_name="Justificación de la Amonestación")
+    applied_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, verbose_name="Strike Activo")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Strike a {self.professional.user.username} - {self.reason[:30]}"
+
+
 class OrganizationProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='organization_profile')
     company_name = models.CharField(max_length=150, verbose_name="Nombre de la Empresa")
@@ -90,3 +109,4 @@ class OrganizationProfile(models.Model):
 
     def __str__(self):
         return f"{self.company_name} ({self.tax_id})"
+
