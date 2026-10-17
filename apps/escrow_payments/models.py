@@ -43,10 +43,17 @@ class PaymentTransaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.transaction_id:
             self.transaction_id = f"SK-PAY-{uuid.uuid4().hex[:10].upper()}"
+        if not self.skilly_fee_percentage:
+            try:
+                from backoffice.models import PlatformSetting
+                self.skilly_fee_percentage = PlatformSetting.get_take_rate()
+            except Exception:
+                self.skilly_fee_percentage = Decimal('15.00')
         if not self.skilly_fee_amount or not self.net_professional_amount:
+            total_dec = Decimal(str(self.total_amount))
             fee_decimal = Decimal(str(self.skilly_fee_percentage)) / Decimal('100.00')
-            self.skilly_fee_amount = self.total_amount * fee_decimal
-            self.net_professional_amount = self.total_amount - self.skilly_fee_amount
+            self.skilly_fee_amount = total_dec * fee_decimal
+            self.net_professional_amount = total_dec - self.skilly_fee_amount
         super().save(*args, **kwargs)
 
     def release_to_professional(self):

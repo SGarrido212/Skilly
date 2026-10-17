@@ -1,0 +1,54 @@
+<!-- COMPONENTE DE NAVEGACIÓN Y PESTAÑAS DEL BACK-OFFICE SKILLY -->
+<div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-2 mb-6">
+    <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-bold no-scrollbar py-1">
+        <a href="{% url 'backoffice:dashboard' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if request.resolver_match.url_name == 'dashboard' %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+
+        <a href="{% url 'backoffice:users_management' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'users' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-users"></i> Usuarios & Sanciones
+        </a>
+
+        <a href="{% url 'backoffice:services_moderation' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'services' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-boxes-stacked"></i> Moderación Servicios
+        </a>
+
+        <a href="{% url 'backoffice:bookings_monitor' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'bookings' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i> Reservas & Supervisión
+        </a>
+
+        <a href="{% url 'backoffice:validations' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'validations' in request.resolver_match.url_name or 'validate_pro' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-file-circle-check"></i> Validaciones
+        </a>
+
+        <a href="{% url 'backoffice:disputes_list' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'dispute' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-scale-balanced"></i> Disputas
+        </a>
+
+        <a href="{% url 'backoffice:escrow_ledger' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'escrow_ledger' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-vault"></i> Libro Custodia
+        </a>
+
+        <a href="{% url 'backoffice:quality_audit' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'quality' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-award"></i> Calidad & Insignias
+        </a>
+
+        <a href="{% url 'backoffice:benefits_management' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'benefits' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-gift"></i> Beneficios
+        </a>
+
+        <a href="{% url 'backoffice:categories_management' %}" 
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'categories' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+            <i class="fa-solid fa-tags"></i> Categorías
+        </a>
+    </div>
+</div>

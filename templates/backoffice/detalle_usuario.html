@@ -1,0 +1,312 @@
+<!-- PLANTILLA DE FICHA 360° DEL USUARIO, SANCIONES Y NOTAS INTERNAS -->
+{% extends 'base.html' %}
+
+{% block title %}Ficha 360° de Usuario: {{ target_user.username }} | Skilly Back-Office{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header con Migas de Pan -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'backoffice:users_management' %}" class="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Directorio de Usuarios
+        </a>
+        <span class="text-xs text-slate-400">ID de Usuario: #{{ target_user.id }}</span>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Tarjeta Principal del Usuario -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-md
+                {% if target_user.is_admin_role %}bg-slate-900
+                {% elif target_user.is_professional %}bg-purple-600
+                {% else %}bg-sky-600{% endif %}">
+                {{ target_user.first_name|first|default:target_user.username|first|upper }}
+            </div>
+            <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h1 class="text-2xl font-black text-slate-900">{{ target_user.get_full_name|default:target_user.username }}</h1>
+                    <span class="text-xs text-slate-400 font-mono">(@{{ target_user.username }})</span>
+                    {% if target_user.is_admin_role %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-900 text-white">ADMINISTRADOR</span>
+                    {% elif target_user.is_professional %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800">PROFESIONAL</span>
+                    {% else %}
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-sky-100 text-sky-800">EMPRESA / ORG</span>
+                    {% endif %}
+                </div>
+                <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+                    <span><i class="fa-solid fa-envelope mr-1 text-slate-400"></i> {{ target_user.email|default:"Sin email" }}</span>
+                    <span><i class="fa-solid fa-phone mr-1 text-slate-400"></i> {{ target_user.phone|default:"Sin teléfono" }}</span>
+                    <span><i class="fa-solid fa-calendar mr-1 text-slate-400"></i> Registrado: {{ target_user.date_joined|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Directas de Cuenta -->
+        <div class="flex flex-wrap items-center gap-2">
+            {% if target_user.is_professional and pro_profile %}
+                <a href="{% url 'public_pro_profile' slug=pro_profile.slug %}" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Perfil Público
+                </a>
+            {% endif %}
+
+            {% if target_user != request.user %}
+                <a href="{% url 'backoffice:toggle_user_status' user_id=target_user.id %}" 
+                   onclick="return confirm('¿Confirmas el cambio de estado de activación de este usuario?');"
+                   class="px-3.5 py-2 {% if target_user.is_active %}bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100{% else %}bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100{% endif %} font-bold rounded-xl border text-xs transition-colors inline-flex items-center gap-1.5">
+                    {% if target_user.is_active %}
+                        <i class="fa-solid fa-ban"></i> Desactivar Cuenta
+                    {% else %}
+                        <i class="fa-solid fa-check"></i> Activar Cuenta
+                    {% endif %}
+                </a>
+
+                {% if target_user.is_professional %}
+                    <a href="{% url 'backoffice:toggle_pro_expulsion' user_id=target_user.id %}" 
+                       onclick="return confirm('¿Confirmas cambiar el estado de expulsión del profesional?');"
+                       class="px-3.5 py-2 {% if pro_profile.expelled_at %}bg-emerald-600 text-white hover:bg-emerald-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} font-bold rounded-xl text-xs transition-colors inline-flex items-center gap-1.5">
+                        <i class="fa-solid fa-gavel"></i>
+                        {% if pro_profile.expelled_at %}Levantar Expulsión{% else %}Expulsar de Skilly{% endif %}
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SECCIÓN SI ES PROFESIONAL: Sanciones, Documentos y Notas Internas -->
+    {% if target_user.is_professional and pro_profile %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Columna Izquierda: Información de Perfil & Documentos -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i class="fa-solid fa-id-badge text-purple-600"></i> Datos Profesionales & Validación
+            </h3>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <span class="text-slate-400 font-bold block text-[10px] uppercase">Título / Especialidad</span>
+                    <span class="font-extrabold text-slate-900 text-sm">{{ pro_profile.profession }}</span>
+                </div>
+
+                <div>
+                    <span class="text-slate-400 font-bold block text-[10px] uppercase">Tarifa por Hora Promedio</span>
+                    <span class="font-black text-purple-700 text-base">${{ pro_profile.hourly_rate|floatformat:0 }}</span>
+                </div>
+
+                <div>
+                    <span class="text-slate-400 font-bold block text-[10px] uppercase">Estado de Validación Documental</span>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2.5 py-1 rounded-full font-black text-[11px]
+                            {% if pro_profile.validation_status == 'VALIDADO' %}bg-emerald-100 text-emerald-800
+                            {% elif pro_profile.validation_status == 'PENDIENTE' %}bg-amber-100 text-amber-800
+                            {% else %}bg-rose-100 text-rose-800{% endif %}">
+                            {{ pro_profile.get_validation_status_display }}
+                        </span>
+                        {% if pro_profile.validation_status != 'VALIDADO' %}
+                            <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='approve' %}" class="text-emerald-700 font-bold underline hover:text-emerald-900">Validar ahora</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-slate-400 font-bold block text-[10px] uppercase">Documento de Respaldo</span>
+                    {% if pro_profile.support_document %}
+                        <a href="{{ pro_profile.support_document.url }}" target="_blank" class="mt-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg border border-indigo-200 inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> Ver Documento Adjunto
+                        </a>
+                    {% else %}
+                        <span class="text-slate-400 italic">No ha subido documento de respaldo</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span class="text-slate-400 font-bold block text-[10px] uppercase">Presentación / Biografía</span>
+                    <p class="text-slate-600 mt-1 italic">{{ pro_profile.bio|default:"Sin biografía redactada." }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Central: Panel de Sanciones & Amonestaciones (Strikes) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Sistema de Sanciones (Strikes)
+                </h3>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black
+                    {% if pro_profile.strikes_count == 0 %}bg-slate-100 text-slate-600
+                    {% elif pro_profile.strikes_count < 3 %}bg-amber-100 text-amber-800
+                    {% else %}bg-rose-600 text-white animate-pulse{% endif %}">
+                    {{ pro_profile.strikes_count }} / 3 Amonestaciones
+                </span>
+            </div>
+
+            <!-- Formulario para Aplicar Strike -->
+            <form action="{% url 'backoffice:apply_strike' user_id=target_user.id %}" method="post" class="space-y-3 bg-rose-50/50 p-3.5 rounded-xl border border-rose-200">
+                {% csrf_token %}
+                <span class="text-xs font-bold text-rose-900 block">Aplicar Nueva Amonestación:</span>
+                {{ strike_form.reason }}
+                <button type="submit" class="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-colors shadow-2xs">
+                    <i class="fa-solid fa-plus mr-1"></i> Confirmar y Aplicar Strike
+                </button>
+            </form>
+
+            <!-- Historial de Strikes -->
+            <div class="space-y-2">
+                <span class="text-xs font-bold text-slate-700 block">Historial de Amonestaciones:</span>
+                {% if strike_records %}
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
+                        {% for st in strike_records %}
+                            <div class="p-2.5 rounded-xl border {% if st.is_active %}border-rose-200 bg-rose-50/40{% else %}border-slate-200 bg-slate-50 opacity-60{% endif %} flex items-start justify-between gap-2">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-bold text-slate-900">
+                                            {% if st.is_active %}<i class="fa-solid fa-circle-exclamation text-rose-600"></i> Strike Activo{% else %}<i class="fa-solid fa-circle-check text-slate-400"></i> Revocado{% endif %}
+                                        </span>
+                                        <span class="text-[10px] text-slate-400">{{ st.created_at|date:"d/m/Y H:i" }}</span>
+                                    </div>
+                                    <p class="text-slate-600 text-[11px]">{{ st.reason }}</p>
+                                    <span class="text-[10px] text-slate-400 block">Por: {{ st.applied_by.username|default:"Admin" }}</span>
+                                </div>
+                                {% if st.is_active %}
+                                    <a href="{% url 'backoffice:revoke_strike' strike_id=st.id %}" 
+                                       onclick="return confirm('¿Desea revocar y desactivar este strike?');"
+                                       class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-[10px] transition-colors shrink-0">
+                                        Revocar
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-400 italic py-2">Sin antecedentes de amonestaciones.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Notas Internas y Confidenciales de Administración -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i class="fa-solid fa-user-pen text-purple-600"></i> Notas Internas de Administración
+            </h3>
+            <p class="text-xs text-slate-500">Estas notas son 100% confidenciales y solo visibles por el equipo administrativo de Skilly.</p>
+
+            <form action="{% url 'backoffice:update_admin_notes' user_id=target_user.id %}" method="post" class="space-y-3">
+                {% csrf_token %}
+                {{ admin_notes_form.admin_notes }}
+                <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-colors shadow-2xs">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> Guardar Notas Internas
+                </button>
+            </form>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN SI ES EMPRESA / ORGANIZACIÓN -->
+    {% if target_user.is_organization and org_profile %}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="fa-solid fa-building text-sky-600"></i> Datos de la Organización
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div>
+                <span class="text-slate-400 font-bold block text-[10px] uppercase">Razón Social</span>
+                <span class="font-extrabold text-slate-900 text-sm">{{ org_profile.company_name }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 font-bold block text-[10px] uppercase">RUT / Identificador Fiscal</span>
+                <span class="font-extrabold text-slate-900 text-sm">{{ org_profile.tax_id }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400 font-bold block text-[10px] uppercase">Descripción Corporativa</span>
+                <p class="text-slate-600 mt-1">{{ org_profile.description|default:"Sin descripción." }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Historial de Servicios y Reservas Vinculadas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Servicios del Usuario (Si es Pro) -->
+        {% if target_user.is_professional %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-purple-600"></i> Servicios Ofrecidos ({{ user_services|length }})
+                </h3>
+            </div>
+            {% if user_services %}
+                <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    {% for s in user_services %}
+                        <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between text-xs">
+                            <div>
+                                <span class="font-bold text-slate-900 block">{{ s.title }}</span>
+                                <span class="text-slate-400 text-[11px]">{{ s.category.name }} · ${{ s.price|floatformat:0 }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
+                                    {% if s.status == 'PUBLICADO' %}bg-emerald-100 text-emerald-800
+                                    {% elif s.status == 'EN_REVISION' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                    {{ s.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 italic py-4">No tiene servicios registrados.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Reservas Asociadas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4 {% if not target_user.is_professional %}lg:col-span-2{% endif %}">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-check text-indigo-600"></i> Historial de Reservas ({{ user_bookings|length }})
+                </h3>
+            </div>
+            {% if user_bookings %}
+                <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                    {% for b in user_bookings %}
+                        <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between text-xs">
+                            <div class="space-y-0.5">
+                                <span class="font-bold text-slate-900 block">Reserva #{{ b.id }}: {{ b.service.title }}</span>
+                                <span class="text-slate-400 text-[11px]">
+                                    {% if target_user.is_professional %}
+                                        Cliente: {{ b.organization.get_full_name|default:b.organization.username }}
+                                    {% else %}
+                                        Pro: {{ b.professional.get_full_name|default:b.professional.username }}
+                                    {% endif %}
+                                    · {{ b.scheduled_date|date:"d/m/Y" }}
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-bold text-slate-900 block">${{ b.service.price|floatformat:0 }}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block
+                                    {% if b.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
+                                    {% elif b.status == 'PAGADO_EN_CUSTODIA' %}bg-blue-100 text-blue-800
+                                    {% elif b.status == 'CANCELADO' %}bg-rose-100 text-rose-800
+                                    {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                    {{ b.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 italic py-4">No tiene reservas registradas.</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

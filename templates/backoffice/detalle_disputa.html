@@ -1,29 +1,38 @@
-<!-- -- PLANTILLA DE DETALLE Y RESOLUCIÓN ARBITRAL DE DISPUTA -- -->
+<!-- PLANTILLA DE DETALLE Y RESOLUCIÓN ARBITRAL DE DISPUTA -->
 {% extends 'base.html' %}
 
 {% block title %}Mediar Disputa #{{ dispute.id }} | Skilly Back-Office{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-            <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1">Mesa de Mediación Arbitral</span>
-            <h1 class="text-2xl font-extrabold text-slate-900">Disputa en Reserva #{{ booking.id }}</h1>
-            <p class="text-xs text-slate-500 font-medium">Revisa el motivo, evidencias y chat de trazabilidad antes de dictaminar la resolución de fondos</p>
+            <div class="flex items-center gap-2 text-rose-600 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-gavel"></i> Mesa de Mediación Arbitral
+            </div>
+            <h1 class="text-2xl font-black text-slate-900">Disputa en Reserva #{{ booking.id }}</h1>
+            <p class="text-xs text-slate-500 font-medium">Revisa el motivo, evidencias y trazabilidad antes de dictaminar la resolución de fondos en custodia</p>
         </div>
-        <a href="{% url 'backoffice:disputes_list' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
-            Volver a Lista
+        <a href="{% url 'backoffice:disputes_list' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Volver a Lista
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-rose-700">Detalle del Reporte</h3>
-        <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 text-xs text-rose-900 space-y-2">
-            <p class="font-bold">Reportado por: {{ dispute.reported_by.get_full_name|default:dispute.reported_by.username }} ({{ dispute.created_at|date:"d/m/Y H:i" }})</p>
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Reporte y Evidencias -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+        <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider text-rose-700 flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i> Detalle del Reporte
+        </h3>
+        <div class="bg-rose-50/70 p-4 rounded-xl border border-rose-200 text-xs text-rose-950 space-y-2">
+            <p class="font-extrabold">Reportado por: {{ dispute.reported_by.get_full_name|default:dispute.reported_by.username }} ({{ dispute.created_at|date:"d/m/Y H:i" }})</p>
             <p class="whitespace-pre-line font-medium leading-relaxed">{{ dispute.reason }}</p>
             {% if dispute.evidence %}
                 <div class="pt-2 border-t border-rose-200">
-                    <a href="{{ dispute.evidence.url }}" target="_blank" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg text-xs hover:bg-rose-700 inline-flex items-center gap-1.5">
+                    <a href="{{ dispute.evidence.url }}" target="_blank" class="px-3.5 py-1.5 bg-rose-600 text-white font-bold rounded-xl text-xs hover:bg-rose-700 inline-flex items-center gap-1.5 shadow-2xs">
                         <i class="fa-solid fa-paperclip"></i> Descargar / Ver Evidencia Adjunta
                     </a>
                 </div>
@@ -31,43 +40,59 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Historial de Chat Interno Trazable</h3>
-        <div class="max-h-72 overflow-y-auto space-y-2 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+    <!-- Chat Interno Trazable -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+        <h3 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-comments text-purple-600"></i> Historial de Chat Interno Trazable
+        </h3>
+        <div class="max-h-72 overflow-y-auto space-y-2.5 p-4 bg-slate-50/70 rounded-2xl border border-slate-200 text-xs">
             {% for msg in chat_messages %}
-                <div class="p-2.5 bg-white rounded-lg border border-slate-200 space-y-0.5">
-                    <span class="font-bold text-slate-900 block">{{ msg.sender.get_full_name|default:msg.sender.username }} ({{ msg.timestamp|date:"d/m H:i" }}):</span>
-                    <p class="text-slate-700">{{ msg.message }}</p>
+                <div class="p-3 bg-white rounded-xl border border-slate-200 space-y-0.5 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-slate-900 block">{{ msg.sender.get_full_name|default:msg.sender.username }}:</span>
+                        <span class="text-[10px] text-slate-400">{{ msg.timestamp|date:"d/m H:i" }}</span>
+                    </div>
+                    <p class="text-slate-700 leading-relaxed">{{ msg.message }}</p>
                 </div>
+            {% empty %}
+                <p class="text-slate-400 italic text-center py-4">No hay mensajes registrados en este servicio.</p>
             {% endfor %}
         </div>
     </div>
 
-    <div class="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
-        <h3 class="text-base font-extrabold text-white flex items-center gap-2">
-            <i class="fa-solid fa-gavel text-amber-400"></i> Dictamen Arbitral de Resolución de Pago Escrow
-        </h3>
+    <!-- Dictamen Arbitral -->
+    <div class="bg-gradient-to-br from-slate-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl space-y-5">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                <i class="fa-solid fa-scale-balanced"></i> Resolución Vinculante
+            </div>
+            <h3 class="text-xl font-black text-white">Dictamen Arbitral de Fondos en Custodia</h3>
+            <p class="text-xs text-slate-300">
+                El monto en custodia de esta reserva es de 
+                <b class="text-amber-400">${{ booking.payment_transaction.total_amount|floatformat:0 }} CLP</b>.
+            </p>
+        </div>
 
         <form method="post" class="space-y-4 text-xs">
             {% csrf_token %}
             <div>
-                <label class="block font-bold text-slate-300 mb-1">Notas del Administrador / Razón del Dictamen:</label>
-                <textarea name="resolution_notes" required rows="3" class="w-full p-3 rounded-xl border border-slate-700 bg-slate-800 text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-amber-400" placeholder="Fundamente el fallo de mediación..."></textarea>
+                <label class="block font-bold text-slate-300 mb-1">Fundamento Arbitral de la Decisión:</label>
+                <textarea name="resolution_notes" required rows="3" class="w-full p-3 rounded-xl border border-slate-700 bg-slate-800/80 text-white text-xs placeholder-slate-400 focus:ring-2 focus:ring-amber-400 focus:border-amber-400" placeholder="Explique la resolución para que quede en el registro de auditoría..."></textarea>
             </div>
 
-            <div class="flex flex-wrap gap-4 pt-2">
-                <button type="submit" name="resolution_type" value="RELEASE_PRO" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow transition-all flex items-center gap-2" onclick="return confirm('¿Confirmas resolver a favor del profesional y liberar los fondos?');">
+            <div class="flex flex-wrap gap-3 pt-2">
+                <button type="submit" name="resolution_type" value="RELEASE_PRO" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-2" onclick="return confirm('¿Confirmas resolver a favor del profesional y liberar los fondos?');">
                     <i class="fa-solid fa-check-double"></i>
                     <span>Liberar Pago Escrow a Profesional</span>
                 </button>
 
-                <button type="submit" name="resolution_type" value="REFUND_ORG" class="px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl shadow transition-all flex items-center gap-2" onclick="return confirm('¿Confirmas resolver a favor de la organización y reembolsar los fondos?');">
+                <button type="submit" name="resolution_type" value="REFUND_ORG" class="px-5 py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-2" onclick="return confirm('¿Confirmas resolver a favor de la organización y reembolsar los fondos?');">
                     <i class="fa-solid fa-rotate-left"></i>
                     <span>Reembolsar Pago Escrow a Organización</span>
                 </button>
 
-                <button type="submit" name="resolution_type" value="MIXED" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-xl shadow transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-scale-balanced"></i>
+                <button type="submit" name="resolution_type" value="MIXED" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-handshake"></i>
                     <span>Registrar Acuerdo Mixto</span>
                 </button>
             </div>

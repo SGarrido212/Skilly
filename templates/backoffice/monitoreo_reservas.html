@@ -1,0 +1,195 @@
+<!-- PLANTILLA DE MONITOREO DE RESERVAS Y SUPERVISIÓN SKILLY -->
+{% extends 'base.html' %}
+
+{% block title %}Monitoreo de Reservas & Supervisión | Skilly Back-Office{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-purple-700 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-calendar-check"></i> Operaciones en Vivo
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Monitoreo de Reservas & Supervisión Skilly
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Control en tiempo real de servicios agendados, mediación proactiva y sesiones con presencia de staff solicitada</p>
+        </div>
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard Admin
+        </a>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Filtros y Búsqueda -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <form method="get" class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <!-- Pestañas Rápidas -->
+            <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-bold no-scrollbar">
+                <a href="?status=ALL{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if not supervision_only and status_filter == 'ALL' %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Todas las Reservas
+                </a>
+                <a href="?supervision=1{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if supervision_only %}bg-indigo-600 text-white shadow-xs{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Supervisión Skilly Solicitada ({{ supervision_count }})
+                </a>
+                <a href="?status=PAGADO_EN_CUSTODIA{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'PAGADO_EN_CUSTODIA' %}bg-emerald-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    En Custodia Escrow ({{ in_escrow_count }})
+                </a>
+                <a href="?status=EN_EJECUCION{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'EN_EJECUCION' %}bg-purple-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    En Ejecución ({{ in_execution_count }})
+                </a>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="relative w-full sm:w-64">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar ID, pro o cliente..." 
+                       class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            </div>
+        </form>
+
+        <!-- Tabla de Reservas -->
+        {% if bookings %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="p-3">Reserva / Servicio</th>
+                            <th class="p-3">Cliente (Empresa)</th>
+                            <th class="p-3">Profesional</th>
+                            <th class="p-3">Fecha & Hora</th>
+                            <th class="p-3">Supervisión Staff</th>
+                            <th class="p-3">Estado & Custodia</th>
+                            <th class="p-3 text-right">Intervención</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                        {% for b in bookings %}
+                            <tr class="hover:bg-slate-50/70 transition-colors">
+                                <td class="p-3">
+                                    <span class="font-extrabold text-slate-900 block">Reserva #{{ b.id }}</span>
+                                    <span class="text-slate-500 text-[11px] block">{{ b.service.title }}</span>
+                                    <span class="font-bold text-slate-800 text-[11px]">${{ b.service.price|floatformat:0 }}</span>
+                                </td>
+
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">{{ b.organization.get_full_name|default:b.organization.username }}</span>
+                                    <span class="text-slate-400 text-[11px]">{{ b.organization.email }}</span>
+                                </td>
+
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">{{ b.professional.get_full_name|default:b.professional.username }}</span>
+                                    <span class="text-slate-400 text-[11px]">{{ b.professional.email }}</span>
+                                </td>
+
+                                <td class="p-3">
+                                    <span class="font-bold text-slate-900 block">{{ b.scheduled_date|date:"d/m/Y" }}</span>
+                                    <span class="text-slate-500 text-[11px]">{{ b.start_time|time:"H:i" }} - {{ b.end_time|time:"H:i" }} hrs</span>
+                                </td>
+
+                                <td class="p-3">
+                                    {% if b.skilly_staff_supervision_requested %}
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                            <i class="fa-solid fa-eye text-indigo-600"></i> Supervisión Pedida
+                                        </span>
+                                    {% else %}
+                                        <span class="text-slate-400 text-[11px] italic">No solicitada</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="p-3">
+                                    <div class="space-y-1">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold inline-block
+                                            {% if b.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
+                                            {% elif b.status == 'PAGADO_EN_CUSTODIA' %}bg-blue-100 text-blue-800
+                                            {% elif b.status == 'EN_EJECUCION' %}bg-purple-100 text-purple-800
+                                            {% elif b.status == 'ENTREGADO' %}bg-amber-100 text-amber-800
+                                            {% elif b.status == 'CANCELADO' %}bg-rose-100 text-rose-800
+                                            {% elif b.status == 'EN_DISPUTA' %}bg-rose-600 text-white
+                                            {% else %}bg-slate-200 text-slate-700{% endif %}">
+                                            {{ b.get_status_display }}
+                                        </span>
+
+                                        {% if b.payment_transaction %}
+                                            <span class="block text-[10px] text-slate-500">
+                                                Custodia: <b>{{ b.payment_transaction.get_escrow_status_display }}</b>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+
+                                <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                                    <a href="{% url 'bookings:detail' pk=b.pk %}" target="_blank" 
+                                       class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition-colors inline-flex items-center gap-1" title="Ver Chat y Requerimientos">
+                                        <i class="fa-solid fa-comments"></i> Chat
+                                    </a>
+
+                                    <button onclick="document.getElementById('modal-booking-{{ b.id }}').classList.remove('hidden')" 
+                                            class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs transition-colors shadow-2xs">
+                                        Intervenir
+                                    </button>
+
+                                    <!-- Modal de Intervención -->
+                                    <div id="modal-booking-{{ b.id }}" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 text-left p-4">
+                                        <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl p-6 space-y-4">
+                                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                                <h3 class="text-base font-black text-slate-900">Intervención Administrativa Reserva #{{ b.id }}</h3>
+                                                <button type="button" onclick="document.getElementById('modal-booking-{{ b.id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                                </button>
+                                            </div>
+
+                                            <div class="text-xs space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                                <div><b>Servicio:</b> {{ b.service.title }}</div>
+                                                <div><b>Monto Transado:</b> ${{ b.service.price|floatformat:0 }}</div>
+                                                <div><b>Estado Actual:</b> {{ b.get_status_display }}</div>
+                                            </div>
+
+                                            <form action="{% url 'backoffice:booking_admin_action' pk=b.pk %}" method="post" class="space-y-3">
+                                                {% csrf_token %}
+                                                <label class="block text-xs font-bold text-slate-700">Acción Extraordinaria de Administración:</label>
+                                                
+                                                <div class="space-y-2 pt-1">
+                                                    <button type="submit" name="action" value="toggle_supervision" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs border border-indigo-200 text-left px-3 flex items-center justify-between">
+                                                        <span><i class="fa-solid fa-user-shield mr-2"></i> Cambiar Flag de Supervisión Staff</span>
+                                                        <span class="text-[10px] text-indigo-500">Activar/Desactivar</span>
+                                                    </button>
+
+                                                    <button type="submit" name="action" value="force_complete" 
+                                                            onclick="return confirm('¿Confirmas forzar la finalización y liberar el pago de custodia al profesional?');"
+                                                            class="w-full py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-xl text-xs border border-emerald-200 text-left px-3 flex items-center justify-between">
+                                                        <span><i class="fa-solid fa-circle-check mr-2"></i> Forzar Finalización y Liberar Pago a Pro</span>
+                                                        <span class="text-[10px] text-emerald-600">Liberar Escrow</span>
+                                                    </button>
+
+                                                    <button type="submit" name="action" value="force_cancel" 
+                                                            onclick="return confirm('¿Confirmas forzar la cancelación y reembolsar el monto a la empresa?');"
+                                                            class="w-full py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold rounded-xl text-xs border border-rose-200 text-left px-3 flex items-center justify-between">
+                                                        <span><i class="fa-solid fa-circle-xmark mr-2"></i> Forzar Cancelación y Reembolsar a Organización</span>
+                                                        <span class="text-[10px] text-rose-600">Reembolsar Escrow</span>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-xs text-slate-400 italic py-10 text-center">No se encontraron reservas con los filtros aplicados.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

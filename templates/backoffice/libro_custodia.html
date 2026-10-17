@@ -1,29 +1,99 @@
-<!-- -- PLANTILLA DE LIBRO MAYOR DE AUDITORÍA DE CUSTODIA (ESCROW LEDGER) -- -->
+<!-- PLANTILLA DE LIBRO MAYOR DE AUDITORÍA DE CUSTODIA (ESCROW LEDGER) -->
 {% extends 'base.html' %}
 
 {% block title %}Libro Mayor de Custodia Escrow | Skilly Back-Office{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-vault text-blue-600"></i> Libro Mayor de Auditoría Custodia (Escrow Ledger)
+            <div class="flex items-center gap-2 text-blue-600 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-vault"></i> Trazabilidad Financiera
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Libro Mayor de Auditoría Custodia (Escrow Ledger)
             </h1>
-            <p class="text-xs text-slate-500 font-medium">Registro histórico detallado de transacciones, estados de retención y comisiones de plataforma</p>
+            <p class="text-xs text-slate-500 font-medium">Histórico exhaustivo de pagos retenidos, órdenes Webpay, liberaciones y liquidación de comisiones</p>
         </div>
-        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
-            Volver a Dashboard Admin
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard Admin
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- 4 Métricas del Libro Mayor -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Activo en Custodia</span>
+            <span class="text-2xl font-black text-blue-600">${{ total_retained|floatformat:0 }}</span>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Fondos retenidos actualmente</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Liberado a Pros</span>
+            <span class="text-2xl font-black text-emerald-600">${{ total_released|floatformat:0 }}</span>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Pagos completados con éxito</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Reembolsos Efectuados</span>
+            <span class="text-2xl font-black text-amber-600">${{ total_refunded|floatformat:0 }}</span>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Fondos devueltos a clientes</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Comisiones Acumuladas</span>
+            <span class="text-2xl font-black text-purple-600">${{ total_fees|floatformat:0 }}</span>
+            <span class="text-[11px] text-purple-700 font-medium block mt-1">Take-rate 15% de Skilly</span>
+        </div>
+    </div>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+        <form method="get" class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <!-- Pestañas de Estado -->
+            <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-bold no-scrollbar">
+                <a href="?status=ALL{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'ALL' %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Todas las Transacciones
+                </a>
+                <a href="?status=RETENIDO{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'RETENIDO' %}bg-blue-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Retenido en Custodia
+                </a>
+                <a href="?status=LIBERADO{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'LIBERADO' %}bg-emerald-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Liberado a Profesional
+                </a>
+                <a href="?status=REEMBOLSADO{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'REEMBOLSADO' %}bg-amber-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Reembolsado
+                </a>
+                <a href="?status=CONGELADO_POR_DISPUTA{% if search_query %}&q={{ search_query }}{% endif %}"
+                   class="px-3 py-1.5 rounded-lg transition-colors {% if status_filter == 'CONGELADO_POR_DISPUTA' %}bg-rose-600 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                    Congelado por Disputa
+                </a>
+            </div>
+
+            <!-- Búsqueda -->
+            <div class="relative w-full sm:w-64">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar ID, orden o usuario..." 
+                       class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            </div>
+        </form>
+
+        <!-- Tabla de Transacciones -->
         {% if transactions %}
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
-                            <th class="p-3">ID Transacción</th>
+                            <th class="p-3">ID Transacción / Orden</th>
                             <th class="p-3">Reserva</th>
                             <th class="p-3">Cliente / Profesional</th>
                             <th class="p-3">Monto Total</th>
@@ -36,17 +106,26 @@
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
                         {% for t in transactions %}
                             <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="p-3 font-extrabold text-slate-900">{{ t.transaction_id }}</td>
-                                <td class="p-3">Reserva #{{ t.booking.id }}</td>
                                 <td class="p-3">
-                                    <span class="block font-bold text-slate-900">Org: {{ t.booking.organization.username }}</span>
-                                    <span class="block text-slate-400 text-[11px]">Pro: {{ t.booking.professional.username }}</span>
+                                    <span class="font-extrabold text-slate-900 block">{{ t.transaction_id }}</span>
+                                    {% if t.buy_order %}
+                                        <span class="text-slate-400 text-[10px] font-mono">OC: {{ t.buy_order }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="p-3">
+                                    <a href="{% url 'bookings:detail' pk=t.booking.id %}" target="_blank" class="font-bold text-purple-700 hover:underline">
+                                        Reserva #{{ t.booking.id }}
+                                    </a>
+                                </td>
+                                <td class="p-3">
+                                    <span class="block font-bold text-slate-900">Org: {{ t.booking.organization.get_full_name|default:t.booking.organization.username }}</span>
+                                    <span class="block text-slate-400 text-[11px]">Pro: {{ t.booking.professional.get_full_name|default:t.booking.professional.username }}</span>
                                 </td>
                                 <td class="p-3 font-black text-slate-900">${{ t.total_amount|floatformat:0 }}</td>
                                 <td class="p-3 font-bold text-purple-700">${{ t.skilly_fee_amount|floatformat:0 }}</td>
                                 <td class="p-3 font-bold text-emerald-700">${{ t.net_professional_amount|floatformat:0 }}</td>
                                 <td class="p-3">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black inline-block
                                         {% if t.escrow_status == 'LIBERADO' %}bg-emerald-100 text-emerald-800
                                         {% elif t.escrow_status == 'RETENIDO' %}bg-blue-100 text-blue-800
                                         {% elif t.escrow_status == 'REEMBOLSADO' %}bg-amber-100 text-amber-800
@@ -61,8 +140,9 @@
                 </table>
             </div>
         {% else %}
-            <p class="text-xs text-slate-500 italic py-4 text-center">No hay registros transaccionales en la custodia.</p>
+            <p class="text-xs text-slate-400 italic py-10 text-center">No hay registros transaccionales con los filtros seleccionados.</p>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}

@@ -1,0 +1,149 @@
+<!-- PLANTILLA DE GESTIÓN DE CATEGORÍAS DEL MARKETPLACE -->
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Categorías | Skilly Back-Office{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-purple-700 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-tags"></i> Taxonomía & Sectores
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Gestión de Categorías del Marketplace
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Configura las áreas profesionales, iconos representativos y sectores de especialización</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="document.getElementById('modal-create-cat').classList.remove('hidden')" 
+                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> Nueva Categoría
+            </button>
+            <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Grid de Categorías -->
+    {% if categories %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {% for c in categories %}
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-base">
+                                <i class="fa-solid {{ c.icon }}"></i>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700">
+                                {{ c.services_count }} Servicio{{ c.services_count|pluralize }}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 class="text-base font-black text-slate-900">{{ c.name }}</h3>
+                            <span class="text-[11px] text-slate-400 font-mono block">slug: {{ c.slug }}</span>
+                        </div>
+
+                        <p class="text-xs text-slate-500 line-clamp-2">{{ c.description|default:"Sin descripción detallada." }}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <a href="{% url 'services:marketplace' %}?category={{ c.slug }}" target="_blank" class="text-purple-600 hover:underline font-bold text-[11px]">
+                            Ver en catálogo <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                        </a>
+
+                        <div class="flex items-center gap-1">
+                            <button onclick="document.getElementById('modal-edit-cat-{{ c.id }}').classList.remove('hidden')" 
+                                    class="p-1.5 text-slate-400 hover:text-purple-600 rounded-lg hover:bg-slate-100" title="Editar">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <form action="{% url 'backoffice:category_delete' pk=c.pk %}" method="post" onsubmit="return confirm('¿Desea eliminar la categoría {{ c.name }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Modal Edición -->
+                    <div id="modal-edit-cat-{{ c.id }}" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 text-left p-4">
+                        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h3 class="text-base font-black text-slate-900">Editar Categoría: {{ c.name }}</h3>
+                                <button type="button" onclick="document.getElementById('modal-edit-cat-{{ c.id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                </button>
+                            </div>
+
+                            <form action="{% url 'backoffice:category_edit' pk=c.pk %}" method="post" class="space-y-3">
+                                {% csrf_token %}
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre:</label>
+                                    <input type="text" name="name" value="{{ c.name }}" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Icono FontAwesome (ej. fa-code):</label>
+                                    <input type="text" name="icon" value="{{ c.icon }}" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Descripción:</label>
+                                    <textarea name="description" rows="3" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs">{{ c.description }}</textarea>
+                                </div>
+
+                                <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                                    <button type="button" onclick="document.getElementById('modal-edit-cat-{{ c.id }}').classList.add('hidden')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancelar</button>
+                                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow-xs">Guardar Cambios</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-xs text-slate-400 italic py-10 text-center">No hay categorías configuradas.</p>
+    {% endif %}
+
+    <!-- Modal Crear Categoría -->
+    <div id="modal-create-cat" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 text-left p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-black text-slate-900">Crear Nueva Categoría</h3>
+                <button type="button" onclick="document.getElementById('modal-create-cat').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form action="{% url 'backoffice:categories_management' %}" method="post" class="space-y-3">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre de la Categoría:</label>
+                    {{ category_form.name }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Clase Icono FontAwesome (ej. fa-rocket, fa-database):</label>
+                    {{ category_form.icon }}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Descripción:</label>
+                    {{ category_form.description }}
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('modal-create-cat').classList.add('hidden')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs shadow-xs">Crear Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

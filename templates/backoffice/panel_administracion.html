@@ -1,118 +1,472 @@
-<!-- -- PLANTILLA DEL DASHBOARD ADMINISTRATIVO DEL BACK-OFFICE -- -->
+<!-- PLANTILLA DEL DASHBOARD ADMINISTRATIVO AVANZADO - BACK-OFFICE SKILLY -->
 {% extends 'base.html' %}
 
-{% block title %}Back-Office Administración | Skilly{% endblock %}
+{% block title %}Centro de Control & Back-Office Administrativo | Skilly{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-purple-900/40">
-        <div class="space-y-1">
-            <div class="flex items-center gap-2 text-purple-300 font-bold text-xs uppercase tracking-wider">
-                <i class="fa-solid fa-user-shield"></i> Back-Office de Control Principal
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header Principal -->
+    <div class="bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-purple-800/40 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="space-y-1.5 relative z-10">
+            <div class="flex items-center gap-2 text-purple-300 font-extrabold text-xs uppercase tracking-wider">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <i class="fa-solid fa-shield-halved"></i> Centro de Comando & Control Ejecutivo
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight">Panel Administrativo Skilly</h1>
-            <p class="text-xs text-slate-300">Auditoría transaccional, mediación de disputas, validación de documentos y control de calidad</p>
+            <h1 class="text-3xl font-black tracking-tight">Panel Administrativo Skilly</h1>
+            <p class="text-xs text-slate-300 max-w-2xl">
+                Supervisión de marketplace, mediación de controversias, validación de credenciales, auditoría de custodia y gestión de usuarios.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 relative z-10">
+            <a href="{% url 'backoffice:users_management' %}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10 inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-users text-sky-400"></i> Usuarios ({{ total_users_count }})
+            </a>
+            <a href="{% url 'backoffice:services_moderation' %}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10 inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-amber-400"></i> Moderación ({{ pending_services_count }})
+            </a>
+            <a href="{% url 'backoffice:bookings_monitor' %}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10 inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-calendar-check text-purple-300"></i> Reservas ({{ total_bookings_count }})
+            </a>
+            <a href="{% url 'backoffice:escrow_ledger' %}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10 inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-vault text-emerald-400"></i> Custodia Escrow
+            </a>
+        </div>
+    </div>
+
+    <!-- Pestañas de Navegación del Back-Office -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Barra de Alertas Críticas de Atención Inmediata -->
+    {% if open_disputes_count > 0 or pending_validations_count > 0 or pending_services_count > 0 or supervision_requested_count > 0 %}
+    <div class="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-purple-500/10 border border-amber-300/60 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <i class="fa-solid fa-bell animate-bounce text-sm"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-extrabold text-slate-900">Atención Requerida en la Plataforma</h3>
+                <p class="text-xs text-slate-600">Hay elementos prioritarios en cola que requieren revisión de administración.</p>
+            </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{% url 'backoffice:validations' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10">
-                <i class="fa-solid fa-file-check mr-1 text-emerald-400"></i> Validaciones ({{ pending_validations_count }})
+            {% if open_disputes_count > 0 %}
+            <a href="{% url 'backoffice:disputes_list' %}" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors">
+                <i class="fa-solid fa-scale-balanced"></i> {{ open_disputes_count }} Disputa{{ open_disputes_count|pluralize }} abierta{{ open_disputes_count|pluralize }}
             </a>
-            <a href="{% url 'backoffice:disputes_list' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10">
-                <i class="fa-solid fa-scale-balanced mr-1 text-rose-400"></i> Disputas ({{ open_disputes_count }})
+            {% endif %}
+
+            {% if pending_validations_count > 0 %}
+            <a href="{% url 'backoffice:validations' %}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors">
+                <i class="fa-solid fa-id-card"></i> {{ pending_validations_count }} Validación{{ pending_validations_count|pluralize:"es" }} Pro
             </a>
-            <a href="{% url 'backoffice:quality_audit' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10">
-                <i class="fa-solid fa-star mr-1 text-amber-400"></i> Auditoría Calidad
+            {% endif %}
+
+            {% if pending_services_count > 0 %}
+            <a href="{% url 'backoffice:services_moderation' %}?status=EN_REVISION" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors">
+                <i class="fa-solid fa-clock"></i> {{ pending_services_count }} Servicio{{ pending_services_count|pluralize }} en revisión
             </a>
-            <a href="{% url 'backoffice:escrow_ledger' %}" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10">
-                <i class="fa-solid fa-vault mr-1 text-blue-400"></i> Libro Custodia
+            {% endif %}
+
+            {% if supervision_requested_count > 0 %}
+            <a href="{% url 'backoffice:bookings_monitor' %}?supervision=1" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors">
+                <i class="fa-solid fa-user-check"></i> {{ supervision_requested_count }} Supervisi{{ supervision_requested_count|pluralize:"ón,ones" }} Skilly
             </a>
+            {% endif %}
         </div>
     </div>
+    {% endif %}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Volumen Transado (GMV)</span>
-            <span class="text-2xl font-black text-slate-900">${{ total_volume|floatformat:0 }}</span>
-            <span class="text-[11px] text-slate-500 font-medium block">Total procesado por la plataforma</span>
+    <!-- 8 Tarjetas Métricas Clave (KPIs) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <!-- 1. GMV -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Volumen Transado (GMV)</span>
+                <span class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-slate-900">${{ total_volume|floatformat:0 }}</div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Total procesado por pasarela</span>
         </div>
 
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Saldo en Custodia (Escrow)</span>
-            <span class="text-2xl font-black text-emerald-600">${{ total_held|floatformat:0 }}</span>
-            <span class="text-[11px] text-emerald-700 font-medium block">Fondos retidos esperando entrega</span>
+        <!-- 2. Saldo en Custodia -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Saldo en Custodia (Escrow)</span>
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-lock"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-emerald-600">${{ total_held|floatformat:0 }}</div>
+            <span class="text-[11px] text-emerald-700 font-medium block mt-1">Fondos retenidos esperando entrega</span>
         </div>
 
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Comisiones Ganadas (Take Rate)</span>
-            <span class="text-2xl font-black text-purple-600">${{ total_fees|floatformat:0 }}</span>
-            <span class="text-[11px] text-purple-700 font-medium block">15% retenido en transacciones</span>
+        <!-- 3. Comisiones Skilly & Take Rate -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Comisiones ({{ current_take_rate }}%)</span>
+                    <button type="button" onclick="document.getElementById('modal-update-take-rate').classList.remove('hidden')" 
+                            class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 flex items-center justify-center text-xs transition-colors" title="Modificar Take Rate de Skilly">
+                        <i class="fa-solid fa-sliders"></i>
+                    </button>
+                </div>
+                <div class="text-2xl font-black text-purple-600">${{ total_fees|floatformat:0 }}</div>
+                <span class="text-[11px] text-purple-700 font-medium block mt-1">Ingresos netos retenidos por Skilly</span>
+            </div>
+            <div class="pt-2 mt-2 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('modal-update-take-rate').classList.remove('hidden')" 
+                        class="text-[11px] font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+                    <i class="fa-solid fa-pen-to-square text-[10px]"></i> Modificar Take Rate ({{ current_take_rate }}%)
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Disputas Abiertas</span>
-            <span class="text-2xl font-black {% if open_disputes_count > 0 %}text-rose-600{% else %}text-slate-900{% endif %}">
-                {{ open_disputes_count }}
+        <!-- 4. Total Usuarios -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Usuarios Registrados</span>
+                <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-users"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ total_users_count }}</div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">
+                <b class="text-slate-800">{{ pros_count }}</b> Profesionales · <b class="text-slate-800">{{ orgs_count }}</b> Empresas
             </span>
-            <span class="text-[11px] text-slate-500 font-medium block">Casos pendientes de mediación</span>
+        </div>
+
+        <!-- 5. Catálogo de Servicios -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Servicios en Catálogo</span>
+                <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-briefcase"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ total_services_count }}</div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">
+                <b class="text-emerald-700">{{ active_services_count }}</b> Activos · <b class="text-amber-700">{{ pending_services_count }}</b> Por revisar
+            </span>
+        </div>
+
+        <!-- 6. Reservas de Servicio -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Reservas</span>
+                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black text-slate-900">{{ total_bookings_count }}</div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">
+                <b class="text-indigo-700">{{ active_bookings_count }}</b> En ejecución o con pago retenido
+            </span>
+        </div>
+
+        <!-- 7. Supervisión Requerida -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Supervisión Skilly</span>
+                <span class="w-8 h-8 rounded-lg {% if supervision_requested_count > 0 %}bg-indigo-100 text-indigo-700 animate-pulse{% else %}bg-slate-100 text-slate-600{% endif %} flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-eye"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black {% if supervision_requested_count > 0 %}text-indigo-600{% else %}text-slate-900{% endif %}">
+                {{ supervision_requested_count }}
+            </div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Sesiones solicitadas con presencia de staff</span>
+        </div>
+
+        <!-- 8. Disputas Abiertas -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Disputas Abiertas</span>
+                <span class="w-8 h-8 rounded-lg {% if open_disputes_count > 0 %}bg-rose-50 text-rose-600{% else %}bg-slate-100 text-slate-600{% endif %} flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+            </div>
+            <div class="text-2xl font-black {% if open_disputes_count > 0 %}text-rose-600{% else %}text-slate-900{% endif %}">
+                {{ open_disputes_count }}
+            </div>
+            <span class="text-[11px] text-slate-500 font-medium block mt-1">Casos pendientes de arbitraje arbitral</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+    <!-- Secciones Operativas Principales (Grid 2 columnas) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- 1. Supervisión de Sesiones Skilly Solicitadas -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-indigo-600"></i> Supervisión de Sesiones Skilly Solicitadas
+                </h3>
+                <a href="{% url 'backoffice:bookings_monitor' %}?supervision=1" class="text-xs font-bold text-purple-600 hover:underline">Ver Todas</a>
+            </div>
+
+            {% if recent_supervision_bookings %}
+                <div class="space-y-2.5">
+                    {% for b in recent_supervision_bookings %}
+                    <div class="p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/40 flex items-center justify-between text-xs hover:bg-indigo-50/70 transition-colors">
+                        <div class="space-y-0.5">
+                            <span class="font-extrabold text-slate-900 block">Reserva #{{ b.id }}: {{ b.service.title }}</span>
+                            <div class="text-slate-500 text-[11px]">
+                                <span>Pro: <b>{{ b.professional.get_full_name|default:b.professional.username }}</b></span> · 
+                                <span>Org: <b>{{ b.organization.get_full_name|default:b.organization.username }}</b></span>
+                            </div>
+                            <span class="text-indigo-700 font-bold text-[10px] block">
+                                <i class="fa-regular fa-clock mr-1"></i> {{ b.scheduled_date|date:"d/m/Y" }} a las {{ b.start_time|time:"H:i" }} hrs
+                            </span>
+                        </div>
+                        <a href="{% url 'bookings:detail' pk=b.pk %}" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs transition-colors shrink-0">
+                            Supervisar
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 italic py-6 text-center">No hay sesiones de supervisión pendientes actualmente.</p>
+            {% endif %}
+        </div>
+
+        <!-- 2. Disputas Pendientes de Mediación -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Disputas Pendientes de Mediación
                 </h3>
-                <a href="{% url 'backoffice:disputes_list' %}" class="text-xs font-bold text-brand-600 hover:underline">Ver Todas</a>
+                <a href="{% url 'backoffice:disputes_list' %}" class="text-xs font-bold text-purple-600 hover:underline">Ver Centro Disputas</a>
             </div>
 
             {% if recent_disputes %}
-                <div class="space-y-3">
+                <div class="space-y-2.5">
                     {% for d in recent_disputes %}
-                        <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                            <div>
-                                <span class="font-bold text-xs text-slate-900 block">Reserva #{{ d.booking.id }}: {{ d.booking.service.title }}</span>
-                                <span class="text-[11px] text-slate-500">Reportado por: {{ d.reported_by.get_full_name|default:d.reported_by.username }}</span>
+                        <div class="p-3.5 rounded-xl border border-rose-100 bg-rose-50/40 flex items-center justify-between text-xs hover:bg-rose-50/70 transition-colors">
+                            <div class="space-y-0.5">
+                                <span class="font-extrabold text-slate-900 block">Reserva #{{ d.booking.id }}: {{ d.booking.service.title }}</span>
+                                <span class="text-slate-500 text-[11px]">Reportado por: <b>{{ d.reported_by.get_full_name|default:d.reported_by.username }}</b></span>
+                                <span class="text-rose-700 font-bold text-[10px] block">Monto en controversia: ${{ d.booking.payment_transaction.total_amount|floatformat:0 }}</span>
                             </div>
-                            <a href="{% url 'backoffice:dispute_detail' pk=d.pk %}" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg text-xs hover:bg-rose-700 transition-colors">
+                            <a href="{% url 'backoffice:dispute_detail' pk=d.pk %}" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg text-xs hover:bg-rose-700 transition-colors shrink-0">
                                 Mediar Caso
                             </a>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="text-xs text-slate-500 italic py-4">No hay disputas abiertas actualmente.</p>
+                <p class="text-xs text-slate-400 italic py-6 text-center">No hay disputas abiertas en este momento.</p>
             {% endif %}
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-emerald-600"></i> Transacciones de Custodia Recientes
+        <!-- 3. Servicios en Revisión por Moderación -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-amber-600"></i> Servicios Pendientes de Revisión ({{ pending_services_count }})
                 </h3>
-                <a href="{% url 'backoffice:escrow_ledger' %}" class="text-xs font-bold text-brand-600 hover:underline">Ver Libro Completo</a>
+                <a href="{% url 'backoffice:services_moderation' %}" class="text-xs font-bold text-purple-600 hover:underline">Ir a Moderación</a>
             </div>
 
-            {% if recent_transactions %}
-                <div class="space-y-3">
-                    {% for t in recent_transactions %}
-                        <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs">
-                            <div>
-                                <span class="font-bold text-slate-900 block">{{ t.transaction_id }}</span>
-                                <span class="text-slate-500">{{ t.booking.organization.get_full_name|default:t.booking.organization.username }}</span>
+            {% if recent_services_to_review %}
+                <div class="space-y-2.5">
+                    {% for s in recent_services_to_review %}
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors">
+                            <div class="space-y-0.5">
+                                <span class="font-bold text-slate-900 block">{{ s.title }}</span>
+                                <span class="text-slate-500 text-[11px]">
+                                    Por <b>{{ s.professional.get_full_name|default:s.professional.username }}</b> en <span class="text-purple-700 font-bold">{{ s.category.name }}</span>
+                                </span>
+                                <span class="text-emerald-700 font-extrabold text-[11px] block">${{ s.price|floatformat:0 }}</span>
                             </div>
-                            <div class="text-right">
-                                <span class="font-black text-slate-900 block">${{ t.total_amount|floatformat:0 }}</span>
-                                <span class="text-[10px] font-bold text-emerald-700">{{ t.get_escrow_status_display }}</span>
+                            <a href="{% url 'backoffice:services_moderation' %}?status=EN_REVISION" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-xs transition-colors shrink-0">
+                                Evaluar
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 italic py-6 text-center">Todos los servicios se encuentran revisados y moderados.</p>
+            {% endif %}
+        </div>
+
+        <!-- 4. Validaciones Documentales Pendientes -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-file-signature text-emerald-600"></i> Validaciones Documentales Pendientes ({{ pending_validations_count }})
+                </h3>
+                <a href="{% url 'backoffice:validations' %}" class="text-xs font-bold text-purple-600 hover:underline">Mesa de Validación</a>
+            </div>
+
+            {% if recent_validations %}
+                <div class="space-y-2.5">
+                    {% for p in recent_validations %}
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors">
+                            <div class="space-y-0.5">
+                                <span class="font-bold text-slate-900 block">{{ p.user.get_full_name|default:p.user.username }}</span>
+                                <span class="text-slate-500 text-[11px]">{{ p.profession }}</span>
+                                {% if p.support_document %}
+                                    <span class="text-emerald-700 font-bold text-[10px] block"><i class="fa-solid fa-paperclip mr-1"></i> Documento adjuntado</span>
+                                {% else %}
+                                    <span class="text-slate-400 italic text-[10px] block">Sin documento adjunto</span>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <a href="{% url 'backoffice:validate_pro' pk=p.pk action='approve' %}" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors">
+                                    <i class="fa-solid fa-check"></i>
+                                </a>
+                                <a href="{% url 'backoffice:validations' %}" class="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs transition-colors">
+                                    Ver Ficha
+                                </a>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p class="text-xs text-slate-500 italic py-4">No hay transacciones registradas.</p>
+                <p class="text-xs text-slate-400 italic py-6 text-center">No hay profesionales pendientes de validación documental.</p>
             {% endif %}
         </div>
     </div>
+
+    <!-- Movimientos Transaccionales Recientes y Atajos Rápidos -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Transacciones Recientes en Escrow (2 columnas) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-purple-600"></i> Últimas Transacciones en Custodia Escrow
+                </h3>
+                <a href="{% url 'backoffice:escrow_ledger' %}" class="text-xs font-bold text-purple-600 hover:underline">Ver Libro Completo</a>
+            </div>
+
+            {% if recent_transactions %}
+                <div class="divide-y divide-slate-100 text-xs">
+                    {% for t in recent_transactions %}
+                        <div class="py-3 flex items-center justify-between hover:bg-slate-50/50 px-2 rounded-lg transition-colors">
+                            <div class="space-y-0.5">
+                                <span class="font-extrabold text-slate-900">{{ t.transaction_id }}</span>
+                                <div class="text-slate-400 text-[11px]">
+                                    Reserva #{{ t.booking.id }} · {{ t.booking.organization.get_full_name|default:t.booking.organization.username }}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-black text-slate-900 block">${{ t.total_amount|floatformat:0 }}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block
+                                    {% if t.escrow_status == 'LIBERADO' %}bg-emerald-100 text-emerald-800
+                                    {% elif t.escrow_status == 'RETENIDO' %}bg-blue-100 text-blue-800
+                                    {% elif t.escrow_status == 'REEMBOLSADO' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                    {{ t.get_escrow_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-400 italic py-6 text-center">No hay registros transaccionales recientes.</p>
+            {% endif %}
+        </div>
+
+        <!-- Módulo de Accesos Rápidos y Configuración de Plataforma (1 columna) -->
+        <div class="bg-gradient-to-br from-slate-900 to-purple-950 rounded-2xl p-5 text-white shadow-xs space-y-4 border border-purple-900/50">
+            <h3 class="text-sm font-extrabold flex items-center gap-2 text-purple-200">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Herramientas de Gestión
+            </h3>
+            <p class="text-xs text-slate-300">Acciones inmediatas sobre el catálogo y usuarios:</p>
+
+            <div class="space-y-2">
+                <a href="{% url 'backoffice:users_management' %}" class="w-full p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-between border border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-user-gear text-sky-400"></i> Gestionar Usuarios & Sanciones</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i>
+                </a>
+
+                <a href="{% url 'backoffice:services_moderation' %}" class="w-full p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-between border border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-sliders text-amber-400"></i> Mesa de Moderación de Servicios</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i>
+                </a>
+
+                <a href="{% url 'backoffice:benefits_management' %}" class="w-full p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-between border border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-handshake-angle text-emerald-400"></i> Alianzas y Beneficios</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i>
+                </a>
+
+                <a href="{% url 'backoffice:categories_management' %}" class="w-full p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-between border border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-purple-300"></i> Categorías del Marketplace</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i>
+                </a>
+
+                <a href="{% url 'backoffice:quality_audit' %}" class="w-full p-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold transition-all flex items-center justify-between border border-white/5">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-ribbon text-rose-300"></i> Insignias & Auditoría de Calidad</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] opacity-70"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal para Modificar el Take Rate de Skilly -->
+    <div id="modal-update-take-rate" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 text-left p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-sliders"></i>
+                    </span>
+                    <h3 class="text-base font-black text-slate-900">Modificar Take Rate de Skilly</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('modal-update-take-rate').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">
+                El <b>Take Rate</b> es el porcentaje de comisión que Skilly retiene sobre cada contratación procesada a través del sistema de custodia Escrow. El cambio aplicará automáticamente a todas las nuevas transacciones generadas.
+            </p>
+
+            <form action="{% url 'backoffice:update_take_rate' %}" method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Porcentaje de Comisión Skilly (%):</label>
+                    <div class="relative">
+                        <input type="number" id="input-take-rate" name="take_rate_percentage" value="{{ current_take_rate }}" 
+                               step="0.10" min="0.00" max="100.00" required
+                               class="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-300 text-lg font-black text-purple-700 bg-purple-50/30 focus:ring-2 focus:ring-purple-500">
+                        <span class="absolute right-4 top-3.5 text-sm font-black text-slate-400">%</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Porcentajes Rápidos -->
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">Valores rápidos de referencia:</span>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="document.getElementById('input-take-rate').value = '10.00'" class="px-2.5 py-1 bg-slate-100 hover:bg-purple-100 hover:text-purple-700 text-slate-700 rounded-lg text-xs font-bold transition-colors">10%</button>
+                        <button type="button" onclick="document.getElementById('input-take-rate').value = '12.00'" class="px-2.5 py-1 bg-slate-100 hover:bg-purple-100 hover:text-purple-700 text-slate-700 rounded-lg text-xs font-bold transition-colors">12%</button>
+                        <button type="button" onclick="document.getElementById('input-take-rate').value = '15.00'" class="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold">15% (Base)</button>
+                        <button type="button" onclick="document.getElementById('input-take-rate').value = '18.00'" class="px-2.5 py-1 bg-slate-100 hover:bg-purple-100 hover:text-purple-700 text-slate-700 rounded-lg text-xs font-bold transition-colors">18%</button>
+                        <button type="button" onclick="document.getElementById('input-take-rate').value = '20.00'" class="px-2.5 py-1 bg-slate-100 hover:bg-purple-100 hover:text-purple-700 text-slate-700 rounded-lg text-xs font-bold transition-colors">20%</button>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('modal-update-take-rate').classList.add('hidden')" 
+                            class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> Guardar Nuevo Take Rate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

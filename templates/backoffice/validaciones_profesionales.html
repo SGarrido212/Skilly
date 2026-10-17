@@ -1,25 +1,31 @@
-<!-- -- PLANTILLA DE MESA DE VALIDACIÓN DOCUMENTAL DE PROFESIONALES -- -->
+<!-- PLANTILLA DE MESA DE VALIDACIÓN DOCUMENTAL DE PROFESIONALES -->
 {% extends 'base.html' %}
 
 {% block title %}Validación de Documentos Profesionales | Skilly Back-Office{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-file-signature text-purple-600"></i> Mesa de Validación de Documentos Profesionales
+            <div class="flex items-center gap-2 text-purple-700 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-file-circle-check"></i> Verificación de Credenciales
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Mesa de Validación Documental
             </h1>
-            <p class="text-xs text-slate-500 font-medium">Revisión de respaldos, acreditación y resolución de estado de profesional (Validado / Rechazado)</p>
+            <p class="text-xs text-slate-500 font-medium">Revisión de títulos, respaldos académicos y acreditaciones para otorgar el sello de verificación</p>
         </div>
-        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
-            Volver a Dashboard Admin
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard Admin
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
         <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-clock text-amber-600"></i> Profesionales Pendientes de Validación ({{ pending_pros|length }})
+            <i class="fa-solid fa-clock text-amber-500"></i> Profesionales Pendientes de Validación ({{ pending_pros|length }})
         </h2>
 
         {% if pending_pros %}
@@ -28,8 +34,9 @@
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <th class="p-3">Profesional</th>
-                            <th class="p-3">Título / Profesión</th>
+                            <th class="p-3">Título / Especialidad</th>
                             <th class="p-3">Documento de Respaldo</th>
+                            <th class="p-3">Tarifa / h</th>
                             <th class="p-3 text-right">Acción de Validación</th>
                         </tr>
                     </thead>
@@ -37,40 +44,69 @@
                         {% for pro in pending_pros %}
                             <tr class="hover:bg-slate-50/80 transition-colors">
                                 <td class="p-3">
-                                    <span class="font-bold text-slate-900 block">{{ pro.user.get_full_name|default:pro.user.username }}</span>
-                                    <span class="text-slate-400 text-[11px]">{{ pro.user.email }}</span>
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-full bg-purple-600 text-white font-black flex items-center justify-center shrink-0">
+                                            {{ pro.user.first_name|first|default:pro.user.username|first|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="font-extrabold text-slate-900 block text-xs">{{ pro.user.get_full_name|default:pro.user.username }}</span>
+                                            <span class="text-slate-400 text-[11px]">{{ pro.user.email }}</span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="p-3">
                                     <span class="font-bold text-slate-900">{{ pro.profession }}</span>
                                 </td>
                                 <td class="p-3">
                                     {% if pro.support_document %}
-                                        <a href="{{ pro.support_document.url }}" target="_blank" class="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors inline-flex items-center gap-1.5">
-                                            <i class="fa-solid fa-file-pdf"></i> Ver Documento (PDF/Imagen)
+                                        <a href="{{ pro.support_document.url }}" target="_blank" class="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors inline-flex items-center gap-1.5 shadow-2xs">
+                                            <i class="fa-solid fa-file-pdf"></i> Ver Respaldo Adjunto
                                         </a>
                                     {% else %}
                                         <span class="text-slate-400 italic">No ha adjuntado documento</span>
                                     {% endif %}
                                 </td>
-                                <td class="p-3 text-right space-x-2">
+                                <td class="p-3 font-bold text-slate-900">
+                                    ${{ pro.hourly_rate|floatformat:0 }}
+                                </td>
+                                <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+                                    <a href="{% url 'backoffice:validation_chat' pro_id=pro.id %}" 
+                                       class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-lg text-xs transition-colors inline-flex items-center gap-1.5 shadow-2xs">
+                                        <i class="fa-solid fa-comments"></i> Chat & Reunión
+                                        {% if pro.validation_messages.count > 0 %}
+                                            <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-black">
+                                                {{ pro.validation_messages.count }}
+                                            </span>
+                                        {% endif %}
+                                    </a>
+
+                                    <a href="{% url 'backoffice:user_detail' user_id=pro.user.id %}" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition-colors inline-block" title="Ver Ficha Completa">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+
                                     <a href="{% url 'backoffice:validate_pro' pk=pro.pk action='approve' %}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors inline-block shadow-2xs">
-                                        <i class="fa-solid fa-check mr-1"></i> Aprobar & Validar
+                                        <i class="fa-solid fa-check mr-1"></i> Aprobar
                                     </a>
 
                                     <button onclick="document.getElementById('reject-modal-{{ pro.id }}').classList.remove('hidden')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition-colors inline-block shadow-2xs">
                                         <i class="fa-solid fa-xmark mr-1"></i> Rechazar
                                     </button>
 
-                                    <div id="reject-modal-{{ pro.id }}" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 text-left">
-                                        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4">
-                                            <h3 class="font-bold text-slate-900 text-sm">Rechazar Perfil de {{ pro.user.get_full_name }}</h3>
+                                    <div id="reject-modal-{{ pro.id }}" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 text-left p-4">
+                                        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl space-y-4">
+                                            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                                <h3 class="font-extrabold text-slate-900 text-sm">Rechazar Perfil de {{ pro.user.get_full_name }}</h3>
+                                                <button type="button" onclick="document.getElementById('reject-modal-{{ pro.id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                                                    <i class="fa-solid fa-xmark text-lg"></i>
+                                                </button>
+                                            </div>
                                             <form action="{% url 'backoffice:validate_pro' pk=pro.pk action='reject' %}" method="post" class="space-y-3">
                                                 {% csrf_token %}
                                                 <label class="block text-xs font-bold text-slate-700">Motivo del Rechazo:</label>
-                                                <textarea name="rejection_reason" required rows="3" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs" placeholder="Explique la razón del rechazo..."></textarea>
-                                                <div class="flex justify-end gap-2">
-                                                    <button type="button" onclick="document.getElementById('reject-modal-{{ pro.id }}').classList.add('hidden')" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Cancelar</button>
-                                                    <button type="submit" class="px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg text-xs">Confirmar Rechazo</button>
+                                                <textarea name="rejection_reason" required rows="3" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs" placeholder="Explique la razón (documento ilegible, caducado, no coincide con el perfil)..."></textarea>
+                                                <div class="flex justify-end gap-2 pt-2">
+                                                    <button type="button" onclick="document.getElementById('reject-modal-{{ pro.id }}').classList.add('hidden')" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Cancelar</button>
+                                                    <button type="submit" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-xs">Confirmar Rechazo</button>
                                                 </div>
                                             </form>
                                         </div>
@@ -82,27 +118,72 @@
                 </table>
             </div>
         {% else %}
-            <p class="text-xs text-slate-500 italic py-4 text-center">No hay profesionales pendientes de validación documental.</p>
+            <p class="text-xs text-slate-400 italic py-6 text-center">No hay profesionales pendientes de validación documental.</p>
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <!-- Profesionales Validados -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
         <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-600"></i> Profesionales Validados ({{ validated_pros|length }})
+            <i class="fa-solid fa-circle-check text-emerald-600"></i> Profesionales Validados Activos ({{ validated_pros|length }})
         </h2>
         {% if validated_pros %}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% for pro in validated_pros %}
-                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors">
                         <div>
-                            <span class="font-bold text-slate-900 block">{{ pro.user.get_full_name|default:pro.user.username }}</span>
-                            <span class="text-slate-500">{{ pro.profession }}</span>
+                            <span class="font-extrabold text-slate-900 block">{{ pro.user.get_full_name|default:pro.user.username }}</span>
+                            <span class="text-slate-500 text-[11px]">{{ pro.profession }}</span>
                         </div>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Validado</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Validado</span>
+                            <a href="{% url 'backoffice:validation_chat' pro_id=pro.id %}" class="p-1.5 text-purple-600 hover:text-purple-800" title="Ver chat y reunión">
+                                <i class="fa-solid fa-comments"></i>
+                            </a>
+                            <a href="{% url 'backoffice:user_detail' user_id=pro.user.id %}" class="p-1.5 text-slate-400 hover:text-purple-600" title="Ver ficha">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
+
+    <!-- Profesionales Rechazados -->
+    {% if rejected_pros %}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark text-rose-600"></i> Perfiles Rechazados / Observados ({{ rejected_pros|length }})
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for pro in rejected_pros %}
+                <div class="p-4 rounded-xl border border-rose-100 bg-rose-50/40 flex flex-col justify-between gap-3 text-xs">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="font-extrabold text-slate-900 block">{{ pro.user.get_full_name|default:pro.user.username }}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">Rechazado</span>
+                        </div>
+                        <span class="text-slate-500 text-[11px] block">{{ pro.profession }}</span>
+                        <p class="text-[11px] text-rose-800 mt-2 italic bg-white p-2 rounded-lg border border-rose-100">
+                            "{{ pro.rejection_reason|default:'Documentación no válida' }}"
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-rose-100">
+                        <a href="{% url 'backoffice:validation_chat' pro_id=pro.id %}" 
+                           class="px-2.5 py-1 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 font-bold rounded-lg text-xs inline-flex items-center gap-1 transition-colors">
+                            <i class="fa-solid fa-comments"></i> Coordinar Reunión / Chat
+                        </a>
+                        <a href="{% url 'backoffice:validate_pro' pk=pro.pk action='approve' %}" 
+                           onclick="return confirm('¿Desea reconsiderar y aprobar este perfil?');"
+                           class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors">
+                            Aprobar
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

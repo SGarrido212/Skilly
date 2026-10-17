@@ -1,23 +1,32 @@
-<!-- -- PLANTILLA DE LISTADO DE DISPUTAS Y CENTRO DE MEDIACIÓN -- -->
+<!-- PLANTILLA DE LISTADO DE DISPUTAS Y CENTRO DE MEDIACIÓN -->
 {% extends 'base.html' %}
 
-{% block title %}Panel de Mediación de Disputas | Skilly Back-Office{% endblock %}
+{% block title %}Centro de Mediación de Disputas | Skilly Back-Office{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="glass-panel p-6 rounded-2xl shadow-sm flex items-center justify-between">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Header -->
+    <div class="glass-panel p-6 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-scale-balanced text-rose-600"></i> Centro de Mediación de Disputas
+            <div class="flex items-center gap-2 text-rose-600 font-extrabold text-xs uppercase tracking-wider mb-1">
+                <i class="fa-solid fa-scale-balanced"></i> Arbitraje y Resolución de Controversias
+            </div>
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Centro de Mediación de Disputas
             </h1>
-            <p class="text-xs text-slate-500 font-medium">Revisión de casos de controversia, evidencias y resolución con liberación o reembolso de fondos Escrow</p>
+            <p class="text-xs text-slate-500 font-medium">Revisión objetiva de casos de controversia, evidencias adjuntas y dictamen de liberación o reembolso de fondos Escrow</p>
         </div>
-        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
-            Volver a Dashboard Admin
+        <a href="{% url 'backoffice:dashboard' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard Admin
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <!-- Pestañas de Navegación -->
+    {% include 'backoffice/nav_tabs.html' %}
+
+    <!-- Disputas Abiertas -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
         <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
             <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Disputas Abiertas / En Mediación ({{ open_disputes|length }})
         </h2>
@@ -29,25 +38,31 @@
                         <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <th class="p-3">ID Reserva / Servicio</th>
                             <th class="p-3">Reportado Por</th>
+                            <th class="p-3">Monto en Controversia</th>
                             <th class="p-3">Fecha Apertura</th>
-                            <th class="p-3 text-right">Acción</th>
+                            <th class="p-3 text-right">Acción Arbitral</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
                         {% for d in open_disputes %}
                             <tr class="hover:bg-slate-50/80 transition-colors">
                                 <td class="p-3">
-                                    <span class="font-bold text-slate-900 block">Reserva #{{ d.booking.id }} - {{ d.booking.service.title }}</span>
+                                    <span class="font-extrabold text-slate-900 block">Reserva #{{ d.booking.id }}</span>
+                                    <span class="text-slate-500 text-[11px] block">{{ d.booking.service.title }}</span>
                                 </td>
                                 <td class="p-3">
                                     <span class="font-bold text-slate-900 block">{{ d.reported_by.get_full_name|default:d.reported_by.username }}</span>
+                                    <span class="text-slate-400 text-[11px]">{{ d.reported_by.get_role_display }}</span>
+                                </td>
+                                <td class="p-3 font-black text-rose-600 text-sm">
+                                    ${{ d.booking.payment_transaction.total_amount|floatformat:0 }}
                                 </td>
                                 <td class="p-3 text-slate-500">
                                     {{ d.created_at|date:"d/m/Y H:i" }}
                                 </td>
                                 <td class="p-3 text-right">
-                                    <a href="{% url 'backoffice:dispute_detail' pk=d.pk %}" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition-colors">
-                                        Mediar & Resolver Caso
+                                    <a href="{% url 'backoffice:dispute_detail' pk=d.pk %}" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs inline-flex items-center gap-1.5">
+                                        <i class="fa-solid fa-gavel"></i> Mediar & Resolver Caso
                                     </a>
                                 </td>
                             </tr>
@@ -56,13 +71,14 @@
                 </table>
             </div>
         {% else %}
-            <p class="text-xs text-slate-500 italic py-4 text-center">No hay disputas pendientes de mediación.</p>
+            <p class="text-xs text-slate-400 italic py-6 text-center">No hay disputas pendientes de mediación en este momento.</p>
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <!-- Disputas Resueltas / Historial -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
         <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-emerald-600"></i> Historial de Disputas Resueltas ({{ resolved_disputes|length }})
+            <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Historial de Disputas Resueltas ({{ resolved_disputes|length }})
         </h2>
 
         {% if resolved_disputes %}
@@ -71,28 +87,36 @@
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                             <th class="p-3">Reserva</th>
-                            <th class="p-3">Estado de Resolución</th>
-                            <th class="p-3">Resuelto Por</th>
-                            <th class="p-3">Fecha</th>
+                            <th class="p-3">Reportado Por</th>
+                            <th class="p-3">Dictamen / Resolución</th>
+                            <th class="p-3">Mediador</th>
+                            <th class="p-3">Fecha Cierre</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-                        {% for d in resolved_disputes %}
+                        {% for rd in resolved_disputes %}
                             <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="p-3 font-bold text-slate-900">Reserva #{{ d.booking.id }}</td>
+                                <td class="p-3 font-bold text-slate-900">Reserva #{{ rd.booking.id }}</td>
+                                <td class="p-3">{{ rd.reported_by.get_full_name|default:rd.reported_by.username }}</td>
                                 <td class="p-3">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                                        {{ d.get_status_display }}
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold
+                                        {% if rd.status == 'RESUELTA_PROFESIONAL' %}bg-emerald-100 text-emerald-800
+                                        {% elif rd.status == 'RESUELTA_ORGANIZACION' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                        {{ rd.get_status_display }}
                                     </span>
                                 </td>
-                                <td class="p-3">{{ d.resolved_by.get_full_name|default:d.resolved_by.username }}</td>
-                                <td class="p-3 text-slate-500">{{ d.resolved_at|date:"d/m/Y" }}</td>
+                                <td class="p-3 text-slate-500">{{ rd.resolved_by.username|default:"Admin" }}</td>
+                                <td class="p-3 text-slate-400">{{ rd.resolved_at|date:"d/m/Y H:i" }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        {% else %}
+            <p class="text-xs text-slate-400 italic py-6 text-center">No hay registros de disputas resueltas.</p>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}

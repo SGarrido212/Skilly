@@ -32,8 +32,9 @@ def checkout_view(request, booking_id):
     # -- PANTALLA DE RESUMEN Y CHECKOUT DE PAGO EN CUSTODIA --
     booking = get_object_or_404(Booking, pk=booking_id, organization=request.user)
 
+    from backoffice.models import PlatformSetting
     total_amount = booking.service.price
-    fee_percentage = Decimal('15.00')
+    fee_percentage = PlatformSetting.get_take_rate()
     fee_amount = total_amount * (fee_percentage / Decimal('100.00'))
     pro_net = total_amount - fee_amount
 
@@ -63,10 +64,12 @@ def webpay_init_view(request, booking_id):
     session_id = f"SESS-{request.user.id}-{int(time.time())}"
     return_url = request.build_absolute_uri(reverse('escrow_payments:webpay_commit'))
 
+    from backoffice.models import PlatformSetting
     transaction, created = PaymentTransaction.objects.get_or_create(
         booking=booking,
         defaults={
             'total_amount': total_amount,
+            'skilly_fee_percentage': PlatformSetting.get_take_rate(),
             'buy_order': buy_order,
             'session_id': session_id,
             'escrow_status': PaymentTransaction.STATUS_INICIADA,
