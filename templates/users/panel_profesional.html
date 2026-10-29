@@ -3,9 +3,27 @@
 
 {% block title %}Panel de Control Profesional | Skilly{% endblock %}
 
+{% block extra_head %}
+<style>
+    @keyframes pulse-video {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+    }
+
+    @keyframes glow-notif {
+        0%, 100% { transform: scale(1); }
+        50%       { transform: scale(1.15); }
+    }
+
+    #notif-badge {
+        animation: glow-notif 1.5s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <div class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div id="panel-header" class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-full bg-brand-600 text-white font-extrabold flex items-center justify-center text-xl shadow">
                 {{ user.first_name|first|default:user.username|first|upper }}
@@ -20,7 +38,7 @@
             <a href="{% url 'backoffice:pro_own_validation_chat' %}" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-2xs">
                 <i class="fa-solid fa-comments"></i> Chat con Skilly
                 {% if validation_messages_count > 0 %}
-                    <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-black">
+                    <span id="notif-badge" class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-black">
                         {{ validation_messages_count }}
                     </span>
                 {% endif %}
@@ -36,10 +54,10 @@
 
     <!-- Tarjeta de Notificación de Reunión Agendada si existe -->
     {% if scheduled_meeting and scheduled_meeting.meeting_scheduled_at %}
-        <div class="bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 border border-purple-700/60 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-white shadow-md">
+        <div id="meeting-card" class="bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 border border-purple-700/60 p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-white shadow-md">
             <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-xl bg-purple-600/40 border border-purple-400/30 flex items-center justify-center text-purple-300 text-xl shrink-0">
-                    <i class="fa-solid fa-video animate-pulse"></i>
+                    <i class="fa-solid fa-video"></i>
                 </div>
                 <div class="space-y-0.5">
                     <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 block">
@@ -65,7 +83,7 @@
     {% endif %}
 
     {% if profile.validation_status == 'PENDIENTE' %}
-        <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center justify-between text-xs text-amber-900">
+        <div id="validation-banner" class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center justify-between text-xs text-amber-900">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-clock text-amber-600 text-xl"></i>
                 <div>
@@ -88,7 +106,7 @@
             </div>
         </div>
     {% elif profile.validation_status == 'RECHAZADO' %}
-        <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-rose-900">
+        <div id="validation-banner" class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-rose-900">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-circle-xmark text-rose-600 text-xl shrink-0"></i>
                 <div>
@@ -112,7 +130,7 @@
         </div>
     {% endif %}
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <div id="bookings-card" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-inbox text-brand-600"></i> Solicitudes & Reservas Recibidas
@@ -135,7 +153,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
                         {% for b in bookings %}
-                            <tr class="hover:bg-slate-50/80 transition-colors">
+                            <tr class="booking-row hover:bg-slate-50/80 transition-colors">
                                 <td class="p-3">
                                     <span class="font-bold text-slate-900 block">#{{ b.id }} - {{ b.service.title }}</span>
                                 </td>
@@ -150,7 +168,7 @@
                                     ${{ b.service.price|floatformat:0 }}
                                 </td>
                                 <td class="p-3">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block
+                                    <span class="status-badge px-2.5 py-1 rounded-full text-[11px] font-bold inline-block
                                         {% if b.status == 'FINALIZADO' %}bg-emerald-100 text-emerald-800
                                         {% elif b.status == 'PAGADO_EN_CUSTODIA' or b.status == 'EN_EJECUCION' %}bg-blue-100 text-blue-800
                                         {% elif b.status == 'ENTREGADO' %}bg-purple-100 text-purple-800
@@ -174,7 +192,7 @@
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <div id="services-card" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <i class="fa-solid fa-layer-group text-brand-600"></i> Mis Servicios Publicados
@@ -187,7 +205,7 @@
         {% if services %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for service in services %}
-                    <div class="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
+                    <div class="my-service-card border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
                         <div class="flex items-center justify-between text-xs">
                             <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">{{ service.category.name }}</span>
                             <span class="font-black text-slate-900">${{ service.price|floatformat:0 }}</span>
@@ -206,4 +224,71 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quitar animate-pulse de Tailwind del ícono video y aplicar el nuestro
+    var videoIcon = document.querySelector('.fa-video');
+    if (videoIcon) {
+        videoIcon.classList.remove('animate-pulse');
+        videoIcon.style.animation = 'pulse-video 1.8s ease-in-out infinite';
+    }
+
+    // Badge de notificación: spring scale
+    var notifBadge = document.getElementById('notif-badge');
+    if (notifBadge) {
+        anime({ targets: notifBadge, scale: [0, 1], duration: 700, delay: 800, easing: 'spring(1,80,10,0)' });
+    }
+
+    // 1. HEADER: slide desde arriba
+    anime({ targets: '#panel-header', opacity: [0,1], translateY: [-20,0], duration: 550, easing: 'easeOutQuart' });
+
+    // 2. MEETING CARD: entrada dramática scale + fade
+    var meetingCard = document.getElementById('meeting-card');
+    if (meetingCard) {
+        anime({ targets: meetingCard, opacity: [0,1], scale: [0.94,1], duration: 600, delay: 300, easing: 'easeOutBack' });
+    }
+
+    // 3. VALIDATION BANNER
+    var valBanner = document.getElementById('validation-banner');
+    if (valBanner) {
+        anime({ targets: valBanner, opacity: [0,1], translateX: [-16,0], duration: 500, delay: 350, easing: 'easeOutQuart' });
+    }
+
+    // 4. BOOKINGS CARD + filas stagger
+    anime({ targets: '#bookings-card', opacity: [0,1], translateY: [20,0], duration: 500, delay: 200, easing: 'easeOutQuart' });
+    var bookingRows = document.querySelectorAll('.booking-row');
+    if (bookingRows.length) {
+        anime.set(bookingRows, { opacity: 0, translateX: -10 });
+        anime({ targets: bookingRows, opacity: 1, translateX: 0, duration: 380, delay: anime.stagger(55, {start: 350}), easing: 'easeOutQuart' });
+    }
+
+    // Status badges spring
+    var statusBadges = document.querySelectorAll('.status-badge');
+    if (statusBadges.length) {
+        anime.set(statusBadges, { scale: 0 });
+        anime({ targets: statusBadges, scale: 1, duration: 500, delay: anime.stagger(60, {start: 500}), easing: 'spring(1,80,10,0)' });
+    }
+
+    // 5. SERVICES CARD + cards stagger
+    var servicesCard = document.getElementById('services-card');
+    if (servicesCard) {
+        anime.set(servicesCard, { opacity: 0, translateY: 20 });
+        var obs = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) {
+                anime({ targets: servicesCard, opacity: 1, translateY: 0, duration: 500, easing: 'easeOutQuart' });
+                var myCards = document.querySelectorAll('.my-service-card');
+                if (myCards.length) {
+                    anime.set(myCards, { opacity: 0, translateY: 12 });
+                    anime({ targets: myCards, opacity: 1, translateY: 0, duration: 420, delay: anime.stagger(70, {start: 150}), easing: 'easeOutQuart' });
+                }
+                obs.disconnect();
+            }
+        }, { threshold: 0.05 });
+        obs.observe(servicesCard);
+    }
+});
+</script>
 {% endblock %}

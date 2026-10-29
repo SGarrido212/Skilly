@@ -3,63 +3,255 @@
 
 {% block title %}Marketplace de Talentos y Servicios | Skilly{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* ── Carrusel: contenedor con altura fija ── */
+    #hero-carousel {
+        position: relative;
+        overflow: hidden;
+        min-height: 420px;
+    }
+    @media (min-width: 640px) {
+        #hero-carousel { min-height: 480px; }
+    }
+
+    /* Todos los slides son absolute y ocupan el mismo espacio */
+    .hero-slide {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1rem;
+        opacity: 0;
+        pointer-events: none;
+        will-change: transform, opacity;
+    }
+    /* Sólo el primer slide es visible al arrancar (antes de JS) */
+    .hero-slide.is-active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Dots indicadores */
+    .carousel-dot {
+        height: 8px;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.4);
+        transition: width 0.35s ease, background 0.35s ease;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+    }
+    .carousel-dot { width: 8px; }
+    .carousel-dot.is-active { width: 28px; background: white; }
+
+    /* Barra de progreso */
+    #carousel-progress {
+        height: 3px;
+        width: 0%;
+        background: linear-gradient(90deg, #a78bfa, #818cf8, #6ee7b7);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-16 px-4 sm:px-6 lg:px-8 border-b border-indigo-900/50">
-    <div class="max-w-7xl mx-auto text-center space-y-6">
-        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30">
-            <i class="fa-solid fa-sparkles text-amber-400"></i> Marketplace Profesional Verificado
-        </span>
-        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
-            Contrata Talentos Senior con <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-indigo-300 to-emerald-400">Custodia Escrow</span> Garantizada
-        </h1>
-        <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
-            Reservas agendadas en bloques de 20 minutos, fondos protegidos hasta la entrega y mediación directa de disputas.
-        </p>
 
-        <form method="get" class="max-w-4xl mx-auto bg-white p-3 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-3 text-slate-800">
-            <div class="flex-1 flex items-center gap-3 px-3 w-full">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg"></i>
-                <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar por habilidad, título o nombre..." class="w-full py-2.5 outline-none font-medium text-slate-800 placeholder-slate-400">
-            </div>
+<!-- ════════════════════════════════════════════════════
+     HERO CARRUSEL
+════════════════════════════════════════════════════ -->
+<div id="hero-carousel" class="text-white border-b border-indigo-900/50">
 
-            <div class="w-full md:w-48 border-t md:border-t-0 md:border-l border-slate-200 px-3">
-                <select name="category" class="w-full py-2.5 outline-none font-medium text-slate-700 bg-transparent">
-                    <option value="">Todas las Categorías</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="w-full md:w-36 border-t md:border-t-0 md:border-l border-slate-200 px-3">
-                <input type="number" name="max_price" value="{{ max_price }}" placeholder="Precio máx $" class="w-full py-2.5 outline-none font-medium text-slate-700 placeholder-slate-400">
-            </div>
-
-            <button type="submit" class="w-full md:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
-                <span>Buscar</span>
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-            </button>
-        </form>
+    <!-- Barra de progreso superior -->
+    <div class="absolute top-0 left-0 right-0 z-20 bg-white/10">
+        <div id="carousel-progress"></div>
     </div>
+
+    <!-- Slide 1: Marketplace principal -->
+    <div class="hero-slide is-active bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+        <div class="max-w-7xl mx-auto w-full text-center space-y-5">
+            <span class="slide-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                <i class="fa-solid fa-sparkles text-amber-400"></i> Marketplace Profesional Verificado
+            </span>
+            <h1 class="slide-title text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
+                Contrata Talentos Senior con
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-indigo-300 to-emerald-400">Custodia Escrow</span>
+                Garantizada
+            </h1>
+            <p class="slide-sub text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
+                Reservas agendadas en bloques de 20 minutos, fondos protegidos hasta la entrega y mediación directa de disputas.
+            </p>
+            <div class="slide-pills flex flex-wrap justify-center gap-3 pt-1">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <i class="fa-solid fa-shield-halved"></i> Pago Escrow Seguro
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    <i class="fa-solid fa-calendar-check"></i> Agenda en 20 min
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <i class="fa-solid fa-scale-balanced"></i> Mediación de Disputas
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2: TaaS -->
+    <div class="hero-slide bg-gradient-to-br from-purple-950 via-slate-900 to-indigo-950">
+        <div class="max-w-7xl mx-auto w-full text-center space-y-5">
+            <span class="slide-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <i class="fa-solid fa-bolt text-yellow-400"></i> Talent as a Service (TaaS)
+            </span>
+            <h2 class="slide-title text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
+                Talento Experto
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-300">Cuando lo Necesitas</span>
+            </h2>
+            <p class="slide-sub text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
+                PyMES y Start-Ups aceleran sus metas contratando profesionales validados bajo demanda, sin burocracia ni compromisos a largo plazo.
+            </p>
+            <div class="slide-pills flex flex-wrap justify-center gap-3 pt-1">
+                <div class="inline-flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                    <i class="fa-solid fa-rocket text-purple-400"></i> Inicio en 24h
+                </div>
+                <div class="inline-flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i> Perfiles 100% Verificados
+                </div>
+                <div class="inline-flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                    <i class="fa-solid fa-coins text-amber-400"></i> Pago liberado al entregar
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: People & Culture -->
+    <div class="hero-slide bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900">
+        <div class="max-w-7xl mx-auto w-full text-center space-y-5">
+            <span class="slide-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <i class="fa-solid fa-users-gear text-emerald-400"></i> People & Culture
+            </span>
+            <h2 class="slide-title text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
+                Culturas Organizacionales
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300">más Humanas</span>
+            </h2>
+            <p class="slide-sub text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
+                Consultoría especializada para fortalecer tus prácticas de gestión de personas. Ágil, sostenible y con impacto real en tu organización.
+            </p>
+            <div class="slide-pills flex flex-wrap justify-center gap-3 pt-1">
+                <div class="inline-flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                    <i class="fa-solid fa-leaf text-emerald-400"></i> ODS 5 · Igualdad de Género
+                </div>
+                <div class="inline-flex items-center gap-2 bg-white/10 px-4 py-2.5 rounded-2xl border border-white/10 text-sm font-semibold">
+                    <i class="fa-solid fa-handshake text-teal-400"></i> ODS 8 · Trabajo Decente
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: CTA / Crecimiento -->
+    <div class="hero-slide bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900">
+        <div class="max-w-7xl mx-auto w-full text-center space-y-5">
+            <span class="slide-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <i class="fa-solid fa-chart-line text-indigo-400"></i> Crecimiento Sostenible
+            </span>
+            <h2 class="slide-title text-4xl sm:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight">
+                Crece con
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-indigo-300 to-purple-300">Skilly</span>
+                de Forma Segura
+            </h2>
+            <p class="slide-sub text-base sm:text-lg text-slate-300 max-w-2xl mx-auto font-normal">
+                Un ecosistema digital donde el talento independiente y las organizaciones se encuentran para lograr un impacto sostenible en Chile y Latinoamérica.
+            </p>
+            <div class="slide-pills flex flex-wrap justify-center gap-3 pt-1">
+                <a href="{% url 'users:register' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 text-sm inline-flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Únete Gratis
+                </a>
+                <a href="{% url 'services:somos_skilly' %}" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/20 transition-all text-sm inline-flex items-center gap-2">
+                    <i class="fa-solid fa-sparkles text-purple-300"></i> Conoce Skilly
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dots -->
+    <div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+        <button class="carousel-dot is-active" data-index="0" aria-label="Slide 1"></button>
+        <button class="carousel-dot" data-index="1" aria-label="Slide 2"></button>
+        <button class="carousel-dot" data-index="2" aria-label="Slide 3"></button>
+        <button class="carousel-dot" data-index="3" aria-label="Slide 4"></button>
+    </div>
+
+    <!-- Flechas -->
+    <button id="carousel-prev" aria-label="Anterior"
+        class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center transition-all">
+        <i class="fa-solid fa-chevron-left text-sm"></i>
+    </button>
+    <button id="carousel-next" aria-label="Siguiente"
+        class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center transition-all">
+        <i class="fa-solid fa-chevron-right text-sm"></i>
+    </button>
 </div>
 
+<!-- ════════════════════════════════════════════════════
+     SEARCH BAR (fija, fuera del carrusel)
+════════════════════════════════════════════════════ -->
+<div class="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-5">
+    <form id="hero-search-bar" method="get"
+        class="max-w-4xl mx-auto bg-white p-3 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-3 text-slate-800">
+        <div class="flex-1 flex items-center gap-3 px-3 w-full">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg"></i>
+            <input type="text" name="q" value="{{ search_query }}"
+                placeholder="Buscar por habilidad, título o nombre..."
+                class="w-full py-2.5 outline-none font-medium text-slate-800 placeholder-slate-400">
+        </div>
+        <div class="w-full md:w-48 border-t md:border-t-0 md:border-l border-slate-200 px-3">
+            <select name="category" class="w-full py-2.5 outline-none font-medium text-slate-700 bg-transparent">
+                <option value="">Todas las Categorías</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="w-full md:w-36 border-t md:border-t-0 md:border-l border-slate-200 px-3">
+            <input type="number" name="max_price" value="{{ max_price }}"
+                placeholder="Precio máx $"
+                class="w-full py-2.5 outline-none font-medium text-slate-700 placeholder-slate-400">
+        </div>
+        <button type="submit"
+            class="w-full md:w-auto px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2">
+            <span>Buscar</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+    </form>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     MARKETPLACE: CATEGORÍAS + SERVICIOS
+════════════════════════════════════════════════════ -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-        <a href="{% url 'services:marketplace' %}" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors {% if not selected_category %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
+
+    <!-- Chips de categoría -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar" id="cat-chips">
+        <a href="{% url 'services:marketplace' %}"
+            class="cat-chip px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors
+                {% if not selected_category %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
             Todos
         </a>
         {% for cat in categories %}
-            <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2 {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
+            <a href="?category={{ cat.slug }}"
+                class="cat-chip px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-2
+                    {% if selected_category == cat.slug %}bg-brand-600 text-white shadow-sm{% else %}bg-white text-slate-600 border border-slate-200 hover:bg-slate-50{% endif %}">
                 <i class="fa-solid {{ cat.icon }}"></i>
                 <span>{{ cat.name }}</span>
             </a>
         {% endfor %}
     </div>
 
+    <!-- Grid de servicios -->
     {% if services %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="services-grid">
             {% for service in services %}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+                <div class="service-card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group">
                     <div class="p-6 space-y-4">
                         <div class="flex items-center justify-between">
                             <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1.5">
@@ -80,14 +272,13 @@
 
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
                             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Entregables clave:</span>
-                            <p class="text-xs font-medium text-slate-700 line-clamp-2">
-                                {{ service.deliverables }}
-                            </p>
+                            <p class="text-xs font-medium text-slate-700 line-clamp-2">{{ service.deliverables }}</p>
                         </div>
                     </div>
 
                     <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                        <a href="{% url 'users:public_pro_profile' slug=service.professional.professional_profile.slug %}" class="flex items-center gap-3 group/pro">
+                        <a href="{% url 'users:public_pro_profile' slug=service.professional.professional_profile.slug %}"
+                            class="flex items-center gap-3 group/pro">
                             <div class="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm shadow-sm group-hover/pro:ring-2 group-hover/pro:ring-brand-500 transition-all">
                                 {{ service.professional.first_name|first|default:service.professional.username|first|upper }}
                             </div>
@@ -103,8 +294,8 @@
                                 </span>
                             </div>
                         </a>
-
-                        <a href="{% url 'services:service_detail' pk=service.pk %}" class="px-3 py-1.5 bg-white hover:bg-brand-600 text-brand-600 hover:text-white border border-brand-200 hover:border-brand-600 rounded-lg text-xs font-bold transition-all shadow-sm">
+                        <a href="{% url 'services:service_detail' pk=service.pk %}"
+                            class="px-3 py-1.5 bg-white hover:bg-brand-600 text-brand-600 hover:text-white border border-brand-200 hover:border-brand-600 rounded-lg text-xs font-bold transition-all shadow-sm">
                             Ver & Reservar
                         </a>
                     </div>
@@ -118,10 +309,195 @@
             </div>
             <h3 class="text-lg font-bold text-slate-800">No se encontraron servicios</h3>
             <p class="text-xs text-slate-500">Prueba con otros términos de búsqueda o selecciona otra categoría.</p>
-            <a href="{% url 'services:marketplace' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-xl shadow">
+            <a href="{% url 'services:marketplace' %}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-xl shadow">
                 Ver Todos los Servicios
             </a>
         </div>
     {% endif %}
 </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ─────────────────────────────────────────────────────────
+    // CARRUSEL
+    // ─────────────────────────────────────────────────────────
+    var slides     = Array.from(document.querySelectorAll('.hero-slide'));
+    var dots       = Array.from(document.querySelectorAll('.carousel-dot'));
+    var progressEl = document.getElementById('carousel-progress');
+    var prevBtn    = document.getElementById('carousel-prev');
+    var nextBtn    = document.getElementById('carousel-next');
+    var carousel   = document.getElementById('hero-carousel');
+
+    var current    = 0;
+    var autoTimer  = null;
+    var progAnim   = null;
+    var DURATION   = 5000;
+    var animating  = false;
+
+    // Asegura que el slide 0 arranque visible y el resto oculto
+    slides.forEach(function(s, i) {
+        anime.set(s, { opacity: i === 0 ? 1 : 0, translateX: 0 });
+        if (i === 0) s.classList.add('is-active');
+        else s.classList.remove('is-active');
+    });
+
+    function goTo(index, dir) {
+        if (animating || index === current) return;
+        animating = true;
+
+        var outSlide = slides[current];
+        var inSlide  = slides[index];
+        var goRight  = (dir === 'next');
+
+        // Posiciona el entrante fuera de cuadro
+        anime.set(inSlide, { opacity: 0, translateX: goRight ? 60 : -60 });
+        inSlide.classList.add('is-active');
+
+        // Sale el actual
+        anime({
+            targets: outSlide,
+            opacity: 0,
+            translateX: goRight ? -60 : 60,
+            duration: 380,
+            easing: 'easeInQuart',
+            complete: function() {
+                outSlide.classList.remove('is-active');
+                anime.set(outSlide, { translateX: 0 });
+            }
+        });
+
+        // Entra el nuevo
+        anime({
+            targets: inSlide,
+            opacity: 1,
+            translateX: 0,
+            duration: 480,
+            easing: 'easeOutQuart',
+            complete: function() { animating = false; }
+        });
+
+        // Animar contenido interno del slide entrante
+        animateSlideContent(inSlide);
+
+        // Dots
+        dots[current].classList.remove('is-active');
+        current = index;
+        dots[current].classList.add('is-active');
+
+        restartProgress();
+    }
+
+    function animateSlideContent(slide) {
+        var badge = slide.querySelector('.slide-badge');
+        var title = slide.querySelector('.slide-title');
+        var sub   = slide.querySelector('.slide-sub');
+        var pills = slide.querySelector('.slide-pills');
+        if (!badge && !title) return;
+
+        var targets = [badge, title, sub, pills].filter(Boolean);
+        anime.set(targets, { opacity: 0, translateY: 14 });
+        anime({
+            targets: targets,
+            opacity: 1,
+            translateY: 0,
+            duration: 500,
+            delay: anime.stagger(80, { start: 120 }),
+            easing: 'easeOutQuart'
+        });
+    }
+
+    function next() { goTo((current + 1) % slides.length, 'next'); }
+    function prev() { goTo((current - 1 + slides.length) % slides.length, 'prev'); }
+
+    function restartProgress() {
+        if (progAnim) progAnim.pause();
+        clearTimeout(autoTimer);
+        anime.set(progressEl, { width: '0%' });
+        progAnim = anime({ targets: progressEl, width: '100%', duration: DURATION, easing: 'linear' });
+        autoTimer = setTimeout(next, DURATION);
+    }
+
+    // Eventos
+    dots.forEach(function(dot, i) {
+        dot.addEventListener('click', function() {
+            goTo(i, i > current ? 'next' : 'prev');
+        });
+    });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+
+    // Pausa en hover
+    carousel.addEventListener('mouseenter', function() {
+        if (progAnim) progAnim.pause();
+        clearTimeout(autoTimer);
+    });
+    carousel.addEventListener('mouseleave', restartProgress);
+
+    // Swipe táctil
+    var touchX = 0;
+    carousel.addEventListener('touchstart', function(e) { touchX = e.touches[0].clientX; }, { passive: true });
+    carousel.addEventListener('touchend', function(e) {
+        var diff = touchX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+    });
+
+    // Animación inicial del contenido del slide 0
+    animateSlideContent(slides[0]);
+    restartProgress();
+
+    // ─────────────────────────────────────────────────────────
+    // SEARCH BAR: fade-in suave al cargar
+    // ─────────────────────────────────────────────────────────
+    anime({
+        targets: '#hero-search-bar',
+        opacity: [0, 1],
+        translateY: [12, 0],
+        duration: 600,
+        delay: 300,
+        easing: 'easeOutQuart'
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // CATEGORY CHIPS: entrada escalonada
+    // ─────────────────────────────────────────────────────────
+    anime({
+        targets: '.cat-chip',
+        opacity: [0, 1],
+        translateX: [-8, 0],
+        duration: 400,
+        delay: anime.stagger(50, { start: 250 }),
+        easing: 'easeOutQuart'
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // SERVICE CARDS: aparecen al entrar en viewport
+    // ─────────────────────────────────────────────────────────
+    var cards = document.querySelectorAll('.service-card');
+    if (cards.length) {
+        // Ocultar via JS (no CSS) → si JS falla, las cards siguen visibles
+        anime.set(cards, { opacity: 0, translateY: 20 });
+
+        var observer = new IntersectionObserver(function(entries) {
+            var visible = entries.filter(function(e) { return e.isIntersecting; }).map(function(e) { return e.target; });
+            if (!visible.length) return;
+            anime({
+                targets: visible,
+                opacity: 1,
+                translateY: 0,
+                duration: 500,
+                delay: anime.stagger(70),
+                easing: 'easeOutQuart'
+            });
+            visible.forEach(function(el) { observer.unobserve(el); });
+        }, { threshold: 0.1 });
+
+        cards.forEach(function(card) { observer.observe(card); });
+    }
+});
+</script>
 {% endblock %}
