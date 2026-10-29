@@ -95,9 +95,15 @@
                 </nav>
 
                 <!-- Auth Buttons / User Profile -->
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <a href="{% url 'services:somos_skilly' %}" 
+                       class="inline-flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs sm:text-sm font-extrabold text-purple-700 bg-purple-50 hover:bg-purple-100 hover:text-purple-900 border border-purple-200/90 shadow-2xs hover:shadow-xs transition-all duration-200">
+                        <i class="fa-solid fa-sparkles text-purple-600 animate-pulse text-xs"></i>
+                        <span>Somos Skilly</span>
+                    </a>
+
                     {% if user.is_authenticated %}
-                        <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div class="flex items-center gap-3 pl-3 border-l border-slate-200">
                             <a href="{% url 'users:profile_edit' %}" class="flex items-center gap-2 group">
                                 <div class="w-9 h-9 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm shadow-sm group-hover:bg-brand-700 transition-colors">
                                     {{ user.first_name|first|default:user.username|first|upper }}
@@ -119,10 +125,10 @@
                             </form>
                         </div>
                     {% else %}
-                        <a href="{% url 'users:login' %}" class="text-sm font-semibold text-slate-700 hover:text-brand-600 px-4 py-2 rounded-lg transition-colors">
+                        <a href="{% url 'users:login' %}" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-brand-600 px-2.5 sm:px-3.5 py-2 rounded-lg transition-colors">
                             Iniciar Sesión
                         </a>
-                        <a href="{% url 'users:register' %}" class="text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                        <a href="{% url 'users:register' %}" class="text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                             Registrarse <i class="fa-solid fa-arrow-right ml-1"></i>
                         </a>
                     {% endif %}
@@ -199,6 +205,8 @@
                         <li class="flex items-center gap-2"><i class="fa-solid fa-shield text-brand-400"></i> Custodia Escrow de Fondos</li>
                         <li class="flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-brand-400"></i> Mediación de Disputas</li>
                         <li class="flex items-center gap-2"><i class="fa-solid fa-check-double text-brand-400"></i> Validación de Documentos</li>
+                        <li><a href="{% url 'services:somos_skilly' %}" class="flex items-center gap-2 hover:text-purple-400 font-bold transition-colors pt-1"><i class="fa-solid fa-sparkles text-purple-400"></i> Somos Skilly (Propósito)</a></li>
+                        <li><a href="{% url 'users:terms' %}" class="flex items-center gap-2 hover:text-brand-400 transition-colors"><i class="fa-solid fa-file-contract text-brand-400"></i> Términos y Condiciones</a></li>
                     </ul>
                 </div>
             </div>

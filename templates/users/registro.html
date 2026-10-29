@@ -1,44 +1,226 @@
-<!-- -- PLANTILLA DE REGISTRO DE USUARIOS -- -->
+<!-- PLANTILLA DE REGISTRO DE USUARIOS - SKILLY -->
 {% extends 'base.html' %}
 
 {% block title %}Crear Cuenta | Skilly{% endblock %}
 
 {% block content %}
-<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-lg w-full glass-panel p-8 rounded-2xl shadow-xl space-y-6">
-        <div class="text-center">
-            <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center text-2xl mx-auto mb-3">
-                <i class="fa-solid fa-user-plus"></i>
+<div class="min-h-[82vh] flex items-center justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand-500 via-purple-600 to-indigo-600"></div>
+
+        <!-- Encabezado del Formulario -->
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200">
+                <span class="w-2 h-2 rounded-full bg-brand-600 animate-pulse"></span>
+                Únete a la Plataforma Skilly
             </div>
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Únete a la Plataforma Skilly</h2>
-            <p class="text-sm text-slate-500 mt-1">Selecciona tu rol y comienza a ofrecer o contratar servicios</p>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Crea tu cuenta</h1>
+            <p class="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+                Selecciona tu rol para ofrecer servicios profesionales o contratar talento experto bajo custodia segura.
+            </p>
         </div>
 
-        <form method="post" class="space-y-4">
+        <form method="post" class="space-y-5" id="register-form">
             {% csrf_token %}
-            {% for field in form %}
-                <div>
-                    <label for="{{ field.id_for_label }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        {{ field.label }}
+
+            <!-- Selección Visual de Rol -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 text-center sm:text-left">
+                    ¿Cómo deseas participar en Skilly?
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="role-selector-cards">
+                    <label id="card-role-pro" class="relative flex flex-col p-4 rounded-2xl border-2 border-brand-500 bg-brand-50/40 cursor-pointer hover:bg-brand-50 transition-all shadow-xs">
+                        <input type="radio" name="role_visual" value="PROFESIONAL" checked onchange="syncRole('PROFESIONAL')" class="sr-only">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-black">
+                                <i class="fa-solid fa-briefcase"></i>
+                            </span>
+                            <span class="w-4 h-4 rounded-full border-2 border-brand-600 bg-brand-600 flex items-center justify-center text-white text-[8px]" id="indicator-pro">
+                                <i class="fa-solid fa-check"></i>
+                            </span>
+                        </div>
+                        <span class="font-extrabold text-sm text-slate-900">Profesional Independiente</span>
+                        <span class="text-[11px] text-slate-500 mt-0.5">Ofrecer mis servicios, validar mis credenciales y recibir pagos en custodia.</span>
                     </label>
-                    {{ field }}
-                    {% if field.help_text %}
-                        <p class="text-xs text-slate-500 mt-1">{{ field.help_text }}</p>
-                    {% endif %}
-                    {% for error in field.errors %}
+
+                    <label id="card-role-org" class="relative flex flex-col p-4 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-all shadow-2xs">
+                        <input type="radio" name="role_visual" value="ORGANIZACION" onchange="syncRole('ORGANIZACION')" class="sr-only">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-black">
+                                <i class="fa-solid fa-building"></i>
+                            </span>
+                            <span class="w-4 h-4 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center text-white text-[8px]" id="indicator-org">
+                                <i class="fa-solid fa-check hidden"></i>
+                            </span>
+                        </div>
+                        <span class="font-extrabold text-sm text-slate-900">Empresa / Organización</span>
+                        <span class="text-[11px] text-slate-500 mt-0.5">Contratar talento especializado y acelerar proyectos estratégicos (TaaS).</span>
+                    </label>
+                </div>
+
+                <!-- Campo de rol nativo de Django (sincronizado) -->
+                <div class="hidden">
+                    {{ form.role }}
+                </div>
+            </div>
+
+            <!-- Nombres y Apellidos en 2 columnas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Nombre <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.first_name }}
+                    {% for error in form.first_name.errors %}
                         <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
                     {% endfor %}
                 </div>
-            {% endfor %}
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Apellido <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.last_name }}
+                    {% for error in form.last_name.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
 
-            <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 mt-4">
-                Crear Mi Cuenta en Skilly <i class="fa-solid fa-arrow-right ml-2"></i>
+            <!-- Usuario y Correo Electrónico -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Nombre de Usuario <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.username }}
+                    {% for error in form.username.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Correo Electrónico <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Teléfono de Contacto -->
+            <div>
+                <label for="{{ form.phone.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                    Teléfono / WhatsApp de Contacto (Opcional)
+                </label>
+                {{ form.phone }}
+                {% for error in form.phone.errors %}
+                    <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Contraseña y Confirmación -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Contraseña <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password1 }}
+                    {% for error in form.password1.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-xs font-bold text-slate-700 mb-1">
+                        Confirmar Contraseña <span class="text-rose-500">*</span>
+                    </label>
+                    {{ form.password2 }}
+                    {% for error in form.password2.errors %}
+                        <p class="text-xs text-rose-600 font-semibold mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Checkbox de Términos y Condiciones -->
+            <div class="pt-2">
+                <div class="flex items-start gap-3 p-4 rounded-2xl bg-purple-50/50 border border-purple-100 hover:bg-purple-50 transition-colors">
+                    <div class="flex items-center h-5">
+                        {{ form.terms_accepted }}
+                    </div>
+                    <label for="{{ form.terms_accepted.id_for_label }}" class="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
+                        He leído y acepto los 
+                        <a href="{% url 'users:terms' %}" target="_blank" rel="noopener noreferrer" 
+                           class="font-black text-brand-600 hover:text-brand-800 underline underline-offset-2 inline-flex items-center gap-1">
+                            Términos y Condiciones de Uso
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                        de la plataforma Skilly, incluyendo el mecanismo de custodia Escrow y las políticas de privacidad.
+                    </label>
+                </div>
+                {% for error in form.terms_accepted.errors %}
+                    <p class="text-xs text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+
+            <!-- Botón de Envío -->
+            <button type="submit" 
+                    class="w-full py-4 bg-gradient-to-r from-brand-600 via-purple-600 to-indigo-600 hover:from-brand-700 hover:via-purple-700 hover:to-indigo-700 text-white font-black rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm">
+                <span>Crear Mi Cuenta en Skilly</span>
+                <i class="fa-solid fa-arrow-right"></i>
             </button>
         </form>
 
-        <div class="pt-4 border-t border-slate-200 text-center text-xs text-slate-600">
-            ¿Ya tienes una cuenta? <a href="{% url 'users:login' %}" class="font-bold text-brand-600 hover:underline">Inicia sesión</a>
+        <div class="pt-4 border-t border-slate-100 text-center text-xs text-slate-600">
+            ¿Ya tienes una cuenta registrada? 
+            <a href="{% url 'users:login' %}" class="font-extrabold text-brand-600 hover:text-brand-800 hover:underline">
+                Inicia sesión aquí
+            </a>
         </div>
     </div>
 </div>
+
+<script>
+    function syncRole(roleValue) {
+        const select = document.getElementById('id_role');
+        if (select) {
+            select.value = roleValue;
+        }
+
+        const cardPro = document.getElementById('card-role-pro');
+        const cardOrg = document.getElementById('card-role-org');
+        const indicatorPro = document.getElementById('indicator-pro');
+        const indicatorOrg = document.getElementById('indicator-org');
+
+        if (roleValue === 'PROFESIONAL') {
+            cardPro.classList.add('border-brand-500', 'bg-brand-50/40');
+            cardPro.classList.remove('border-slate-200', 'bg-white');
+            indicatorPro.classList.add('border-brand-600', 'bg-brand-600');
+            indicatorPro.querySelector('i').classList.remove('hidden');
+
+            cardOrg.classList.remove('border-brand-500', 'bg-brand-50/40');
+            cardOrg.classList.add('border-slate-200', 'bg-white');
+            indicatorOrg.classList.remove('border-brand-600', 'bg-brand-600');
+            indicatorOrg.querySelector('i').classList.add('hidden');
+        } else {
+            cardOrg.classList.add('border-brand-500', 'bg-brand-50/40');
+            cardOrg.classList.remove('border-slate-200', 'bg-white');
+            indicatorOrg.classList.add('border-brand-600', 'bg-brand-600');
+            indicatorOrg.querySelector('i').classList.remove('hidden');
+
+            cardPro.classList.remove('border-brand-500', 'bg-brand-50/40');
+            cardPro.classList.add('border-slate-200', 'bg-white');
+            indicatorPro.classList.remove('border-brand-600', 'bg-brand-600');
+            indicatorPro.querySelector('i').classList.add('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('id_role');
+        if (select && select.value) {
+            syncRole(select.value);
+        }
+    });
+</script>
 {% endblock %}

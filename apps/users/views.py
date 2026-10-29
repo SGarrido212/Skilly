@@ -88,11 +88,18 @@ def pro_dashboard_view(request):
     received_bookings = request.user.received_bookings.all().select_related('service', 'organization')
     timeslots = request.user.timeslots.all()
 
+    scheduled_meeting = profile.validation_messages.filter(
+        meeting_scheduled_at__isnull=False
+    ).order_by('-created_at').first() if profile else None
+    validation_messages_count = profile.validation_messages.count() if profile else 0
+
     context = {
         'profile': profile,
         'services': services,
         'bookings': received_bookings,
         'timeslots': timeslots,
+        'scheduled_meeting': scheduled_meeting,
+        'validation_messages_count': validation_messages_count,
     }
     return render(request, 'users/panel_profesional.html', context)
 
@@ -141,3 +148,9 @@ def profile_edit_view(request):
         form = form_class(instance=profile)
 
     return render(request, 'users/editar_perfil.html', {'form': form, 'profile': profile})
+
+
+def terms_view(request):
+    """Página de Términos y Condiciones Oficiales de Skilly."""
+    return render(request, 'users/terminos_condiciones.html')
+

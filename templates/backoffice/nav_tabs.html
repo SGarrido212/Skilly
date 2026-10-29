@@ -22,7 +22,7 @@
         </a>
 
         <a href="{% url 'backoffice:validations' %}" 
-           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'validations' in request.resolver_match.url_name or 'validate_pro' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
+           class="px-3.5 py-2 rounded-xl transition-all inline-flex items-center gap-2 whitespace-nowrap {% if 'validat' in request.resolver_match.url_name %}bg-purple-600 text-white shadow-xs{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-100{% endif %}">
             <i class="fa-solid fa-file-circle-check"></i> Validaciones
         </a>
 

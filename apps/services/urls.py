@@ -8,4 +8,5 @@ urlpatterns = [
     path('services/<int:pk>/', views.service_detail_view, name='service_detail'),
     path('services/create/', views.service_create_view, name='service_create'),
     path('services/<int:pk>/edit/', views.service_edit_view, name='service_edit'),
+    path('somos-skilly/', views.somos_skilly_view, name='somos_skilly'),
 ]

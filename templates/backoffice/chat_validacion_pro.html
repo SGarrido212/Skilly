@@ -9,7 +9,7 @@
     <!-- Header -->
     <div class="glass-panel p-6 rounded-3xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-            <a href="{% url 'users:pro_dashboard' %}" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm transition-colors shrink-0">
+            <a href="{% url 'users:pro_dashboard' %}" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm transition-colors shrink-0" title="Volver a Mi Panel">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
             <div>
@@ -37,41 +37,45 @@
     </div>
 
     <!-- Tarjeta de Próxima Reunión si existe -->
-    {% with last_meeting_msg=chat_messages.last %}
-    {% if last_meeting_msg and last_meeting_msg.meeting_scheduled_at %}
-        <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-purple-800/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    {% if scheduled_meeting and scheduled_meeting.meeting_scheduled_at %}
+        <div class="bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-purple-800/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div class="space-y-1">
                 <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 block">
-                    <i class="fa-solid fa-calendar-check mr-1 text-emerald-400"></i> Cita Confirmada por Administración
+                    <i class="fa-solid fa-calendar-check mr-1 text-emerald-400"></i> Cita Confirmada por Administración Skilly
                 </span>
                 <h3 class="text-lg font-black text-white">Reunión de Validación & Bienvenida</h3>
                 <p class="text-xs text-slate-300">
-                    Fecha agendada: <b class="text-white">{{ last_meeting_msg.meeting_scheduled_at|date:"l d de F, Y" }}</b> a las <b class="text-white">{{ last_meeting_msg.meeting_scheduled_at|time:"H:i" }} hrs</b>.
+                    Fecha agendada: <b class="text-white">{{ scheduled_meeting.meeting_scheduled_at|date:"l d de F, Y" }}</b> a las <b class="text-white">{{ scheduled_meeting.meeting_scheduled_at|time:"H:i" }} hrs</b>.
                 </p>
             </div>
-            {% if last_meeting_msg.meeting_link %}
-                <a href="{{ last_meeting_msg.meeting_link }}" target="_blank" 
-                   class="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition-colors inline-flex items-center gap-2 shadow-xs shrink-0">
-                    <i class="fa-solid fa-video"></i> Unirse a la Videollamada
-                </a>
-            {% endif %}
+            <div class="flex items-center gap-2 shrink-0">
+                {% if scheduled_meeting.meeting_link %}
+                    <a href="{{ scheduled_meeting.meeting_link }}" target="_blank" 
+                       class="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition-colors inline-flex items-center gap-2 shadow-xs">
+                        <i class="fa-solid fa-video"></i> Unirse a la Videollamada
+                    </a>
+                    <button type="button" onclick="navigator.clipboard.writeText('{{ scheduled_meeting.meeting_link }}'); alert('Enlace de reunión copiado al portapapeles');" 
+                            class="p-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs transition-colors" title="Copiar enlace">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                {% endif %}
+            </div>
         </div>
     {% endif %}
-    {% endwith %}
 
     <!-- Chat Container -->
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between overflow-hidden min-h-[500px]">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between overflow-hidden min-h-[520px]">
         <!-- Encabezado -->
         <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <span class="text-xs font-black text-slate-800">Mensajes con el Equipo de Calidad Skilly</span>
             </div>
-            <span class="text-[11px] text-slate-400">Respuestas en menos de 24 hrs hábiles</span>
+            <span class="text-[11px] text-slate-400">Trazabilidad oficial de acreditación</span>
         </div>
 
         <!-- Mensajes -->
-        <div class="p-6 space-y-4 overflow-y-auto max-h-[380px] bg-slate-50/30 flex-1">
+        <div id="pro-chat-scroll-container" class="p-6 space-y-4 overflow-y-auto max-h-[420px] bg-slate-50/30 flex-1">
             {% if chat_messages %}
                 {% for msg in chat_messages %}
                     <div class="flex flex-col {% if msg.sender == request.user %}items-end{% else %}items-start{% endif %} space-y-1">
@@ -91,6 +95,19 @@
                             {% endif %}">
                             <p class="whitespace-pre-line">{{ msg.message }}</p>
 
+                            <!-- Archivo Adjunto en el mensaje si existe -->
+                            {% if msg.attachment %}
+                                <div class="pt-2 border-t {% if msg.sender == request.user %}border-purple-400/40{% else %}border-slate-200{% endif %}">
+                                    <a href="{{ msg.attachment.url }}" target="_blank" 
+                                       class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-[11px] transition-colors
+                                       {% if msg.sender == request.user %}bg-purple-700/80 hover:bg-purple-700 text-white border border-purple-400/30{% else %}bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200{% endif %}">
+                                        <i class="fa-solid fa-paperclip"></i>
+                                        <span class="truncate max-w-[200px]">Ver Archivo Adjunto</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+
                             {% if msg.meeting_scheduled_at or msg.meeting_link %}
                                 <div class="p-3 rounded-xl border mt-2 text-xs space-y-1.5
                                     {% if msg.sender == request.user %}
@@ -103,14 +120,14 @@
                                     </div>
                                     {% if msg.meeting_scheduled_at %}
                                         <div class="text-[11px] font-bold">
-                                            Fecha: {{ msg.meeting_scheduled_at|date:"d/m/Y H:i" }} hrs
+                                            Fecha y Hora: {{ msg.meeting_scheduled_at|date:"d/m/Y H:i" }} hrs
                                         </div>
                                     {% endif %}
                                     {% if msg.meeting_link %}
-                                        <div class="pt-1">
+                                        <div class="pt-1 flex items-center gap-2">
                                             <a href="{{ msg.meeting_link }}" target="_blank" 
-                                               class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-purple-700 font-black rounded-lg text-[10px] hover:bg-purple-50 transition-colors">
-                                                <i class="fa-solid fa-video"></i> Enlace de Videollamada
+                                               class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-purple-700 font-black rounded-lg text-[10px] hover:bg-purple-50 transition-colors shadow-2xs">
+                                                <i class="fa-solid fa-video"></i> Entrar al Enlace de la Videollamada
                                             </a>
                                         </div>
                                     {% endif %}
@@ -133,13 +150,44 @@
         </div>
 
         <!-- Formulario -->
-        <div class="p-4 sm:p-5 bg-white border-t border-slate-200">
-            <form action="{% url 'backoffice:pro_own_validation_chat' %}" method="post" class="space-y-3">
+        <div class="p-4 sm:p-5 bg-white border-t border-slate-200 space-y-3">
+
+            <!-- Respuestas Rápidas para el Profesional -->
+            <div class="flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar pb-1">
+                <span class="text-slate-400 font-bold shrink-0">Respuestas rápidas:</span>
+                <button type="button" onclick="setProTemplate('Hola, confirmo mi asistencia a la reunión agendada. ¡Muchas gracias!')"
+                        class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                    ✅ Confirmo Asistencia
+                </button>
+                <button type="button" onclick="setProTemplate('Hola, ¿sería posible reagendar la reunión para otro horario? Me acomodan las tardes.')"
+                        class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                    🕒 Proponer Otro Horario
+                </button>
+                <button type="button" onclick="setProTemplate('Hola, he adjuntado el documento de respaldo solicitado para su revisión.')"
+                        class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                    📄 Adjunté Documento
+                </button>
+                <button type="button" onclick="setProTemplate('Hola equipo Skilly, tengo una consulta sobre los requisitos para validar mi perfil.')"
+                        class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                    ❓ Consulta sobre Requisitos
+                </button>
+            </div>
+
+            <form action="{% url 'backoffice:pro_own_validation_chat' %}" method="post" enctype="multipart/form-data" class="space-y-3">
                 {% csrf_token %}
                 <div>
                     {{ form.message }}
                 </div>
-                <div class="flex justify-end">
+
+                <!-- Adjuntar Documento Opcional -->
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-600 mb-1">
+                        <i class="fa-solid fa-paperclip text-purple-600 mr-1"></i> Adjuntar archivo o documento (PDF, imagen, máx 5MB):
+                    </label>
+                    {{ form.attachment }}
+                </div>
+
+                <div class="flex justify-end pt-1">
                     <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs inline-flex items-center gap-2">
                         <i class="fa-solid fa-paper-plane"></i> Enviar Mensaje
                     </button>
@@ -149,4 +197,22 @@
     </div>
 
 </div>
+
+<script>
+    function setProTemplate(text) {
+        const textarea = document.getElementById('id_message');
+        if (textarea) {
+            textarea.value = text;
+            textarea.focus();
+        }
+    }
+
+    // Auto-scroll chat to bottom
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('pro-chat-scroll-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
 {% endblock %}

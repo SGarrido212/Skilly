@@ -31,7 +31,7 @@ class ValidationMessageForm(forms.ModelForm):
 
     class Meta:
         model = ValidationMessage
-        fields = ('message', 'meeting_scheduled_at', 'meeting_link')
+        fields = ('message', 'meeting_scheduled_at', 'meeting_link', 'attachment')
         widgets = {
             'message': forms.Textarea(attrs={
                 'class': 'w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-purple-500 focus:border-purple-500',
@@ -41,6 +41,10 @@ class ValidationMessageForm(forms.ModelForm):
             'meeting_link': forms.URLInput(attrs={
                 'class': 'w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs',
                 'placeholder': 'https://meet.google.com/xxx-xxxx-xxx o Zoom'
+            }),
+            'attachment': forms.FileInput(attrs={
+                'class': 'block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer',
+                'accept': '.pdf,.png,.jpg,.jpeg,.doc,.docx'
             }),
         }
 

@@ -101,3 +101,9 @@ def service_edit_view(request, pk):
         form = ServiceForm(instance=service)
 
     return render(request, 'services/formulario_servicio.html', {'form': form, 'service': service, 'title': 'Editar Servicio'})
+
+
+def somos_skilly_view(request):
+    """Página institucional Somos Skilly: Propósito, Modelo y Compromiso."""
+    return render(request, 'services/somos_skilly.html')
+

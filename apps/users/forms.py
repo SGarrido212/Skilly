@@ -29,6 +29,13 @@ class CustomUserRegisterForm(UserCreationForm):
         required=False,
         widget=forms.TextInput(attrs={'class': 'w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-800', 'placeholder': '+56 9 1234 5678'})
     )
+    terms_accepted = forms.BooleanField(
+        required=True,
+        error_messages={'required': 'Debes aceptar los Términos y Condiciones para crear tu cuenta.'},
+        widget=forms.CheckboxInput(attrs={
+            'class': 'w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500 cursor-pointer transition-colors'
+        })
+    )
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
@@ -37,8 +44,8 @@ class CustomUserRegisterForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            if not isinstance(field.widget, forms.Select):
-                field.widget.attrs.setdefault('class', 'w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium text-slate-800')
+            if not isinstance(field.widget, (forms.Select, forms.CheckboxInput)):
+                field.widget.attrs.setdefault('class', 'w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-medium text-slate-800 text-sm')
 
 
 class ProfessionalProfileForm(forms.ModelForm):

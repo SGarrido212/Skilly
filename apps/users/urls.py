@@ -12,5 +12,6 @@ urlpatterns = [
     path('dashboard/pro/', views.pro_dashboard_view, name='pro_dashboard'),
     path('dashboard/org/', views.org_dashboard_view, name='org_dashboard'),
     path('profile/edit/', views.profile_edit_view, name='profile_edit'),
+    path('terminos/', views.terms_view, name='terms'),
     path('pro/<slug:slug>/', views.public_pro_profile_view, name='public_pro_profile'),
 ]

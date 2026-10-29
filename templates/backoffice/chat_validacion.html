@@ -41,10 +41,22 @@
             {% endif %}
 
             {% if pro_profile.validation_status != 'VALIDADO' %}
-                <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='approve' %}" 
-                   onclick="return confirm('¿Confirmas que deseas validar al profesional?');"
+                <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='approve' %}?next={% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" 
+                   onclick="return confirm('¿Confirmas que deseas validar y aprobar las credenciales de este profesional?');"
                    class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs inline-flex items-center gap-1.5">
                     <i class="fa-solid fa-check"></i> Aprobar & Validar
+                </a>
+            {% endif %}
+
+            {% if pro_profile.validation_status != 'RECHAZADO' %}
+                <button type="button" onclick="document.getElementById('modal-reject-pro').classList.remove('hidden')" 
+                        class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs border border-rose-200 transition-colors inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-xmark"></i> Rechazar
+                </button>
+            {% else %}
+                <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='pending' %}?next={% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" 
+                   class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-xl text-xs border border-amber-200 transition-colors inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> Reabrir a Pendiente
                 </a>
             {% endif %}
 
@@ -62,8 +74,7 @@
         <!-- Columna Izquierda: Tarjeta de Reunión Agendada y Respaldo -->
         <div class="space-y-6">
             <!-- Tarjeta de Estado de Reunión -->
-            {% with last_meeting_msg=chat_messages.last %}
-            <div class="bg-gradient-to-br from-purple-900 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-purple-800/40 space-y-4">
+            <div class="bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-purple-800/40 space-y-4">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
                         <i class="fa-solid fa-video"></i> Entrevista / Onboarding
@@ -80,32 +91,37 @@
                     </p>
                 </div>
 
-                {% if last_meeting_msg and last_meeting_msg.meeting_scheduled_at %}
+                {% if scheduled_meeting and scheduled_meeting.meeting_scheduled_at %}
                     <div class="bg-white/10 rounded-2xl p-4 border border-white/10 space-y-2">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">Próxima Reunión Pautada:</span>
                         <div class="text-sm font-black text-white flex items-center gap-2">
                             <i class="fa-regular fa-calendar-check text-purple-400"></i>
-                            {{ last_meeting_msg.meeting_scheduled_at|date:"l d de F, Y" }} a las {{ last_meeting_msg.meeting_scheduled_at|time:"H:i" }} hrs
+                            {{ scheduled_meeting.meeting_scheduled_at|date:"l d de F, Y" }} a las {{ scheduled_meeting.meeting_scheduled_at|time:"H:i" }} hrs
                         </div>
-                        {% if last_meeting_msg.meeting_link %}
-                            <a href="{{ last_meeting_msg.meeting_link }}" target="_blank" 
-                               class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition-colors inline-flex items-center justify-center gap-2 shadow-xs mt-2">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Unirse a la Reunión (Meet/Zoom)
-                            </a>
+                        {% if scheduled_meeting.meeting_link %}
+                            <div class="space-y-1.5 pt-1">
+                                <a href="{{ scheduled_meeting.meeting_link }}" target="_blank" 
+                                   class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-xl text-xs transition-colors inline-flex items-center justify-center gap-2 shadow-xs">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Unirse a la Reunión (Meet/Zoom)
+                                </a>
+                                <button type="button" onclick="navigator.clipboard.writeText('{{ scheduled_meeting.meeting_link }}'); alert('Enlace de reunión copiado al portapapeles');" 
+                                        class="w-full py-1 text-[11px] text-purple-200 hover:text-white transition-colors text-center font-bold">
+                                    <i class="fa-solid fa-copy mr-1"></i> Copiar enlace de reunión
+                                </button>
+                            </div>
                         {% endif %}
                     </div>
                 {% else %}
                     <div class="bg-white/5 rounded-2xl p-3.5 border border-white/5 text-xs text-slate-400 italic">
-                        No hay reunión agendada aún. Puedes programar una en el formulario de abajo.
+                        No hay reunión agendada aún. Puedes programar una en el formulario de abajo o en el chat.
                     </div>
                 {% endif %}
             </div>
-            {% endwith %}
 
             <!-- Resumen Documental del Profesional -->
             <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-4">
                 <h3 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-file-contract text-purple-600"></i> Antecedentes Documentales
+                    <i class="fa-solid fa-file-contract text-purple-600"></i> Antecedentes Declarados
                 </h3>
 
                 <div class="space-y-3 text-xs">
@@ -126,16 +142,40 @@
 
                     {% if pro_profile.support_document %}
                         <div class="pt-2 border-t border-slate-100">
-                            <span class="text-slate-400 font-bold block text-[10px] uppercase mb-1.5">Archivo Adjuntado</span>
+                            <span class="text-slate-400 font-bold block text-[10px] uppercase mb-1.5">Archivo de Respaldo Adjunto</span>
                             <a href="{{ pro_profile.support_document.url }}" target="_blank" class="w-full p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 font-bold flex items-center justify-between transition-colors">
                                 <span class="flex items-center gap-2 truncate">
-                                    <i class="fa-solid fa-file-pdf text-base"></i> Documento_Respaldo.pdf
+                                    <i class="fa-solid fa-file-pdf text-base"></i> Ver Documento Adjunto
                                 </span>
                                 <i class="fa-solid fa-arrow-down text-xs"></i>
                             </a>
                         </div>
+                    {% else %}
+                        <div class="pt-2 border-t border-slate-100 text-slate-400 italic">
+                            No adjuntó documento en su perfil aún.
+                        </div>
                     {% endif %}
                 </div>
+            </div>
+
+            <!-- Notas Internas Privadas del Equipo Skilly -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-amber-600"></i> Notas Internas Skilly
+                    </h3>
+                    <span class="text-[10px] font-bold text-slate-400">Confidencial</span>
+                </div>
+                <p class="text-[11px] text-slate-500">Anotaciones de entrevista y seguimiento solo visibles por el equipo administrador.</p>
+                <form action="{% url 'backoffice:update_admin_notes' user_id=pro_profile.user.id %}?next={% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" method="post" class="space-y-2">
+                    {% csrf_token %}
+                    {{ admin_notes_form.admin_notes }}
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs transition-colors">
+                            Guardar Notas
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -148,11 +188,11 @@
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     <span class="text-xs font-black text-slate-800">Canal de Validación & Entrevista en Vivo</span>
                 </div>
-                <span class="text-[11px] text-slate-400 font-medium">Trazabilidad oficial de incorporación</span>
+                <span class="text-[11px] text-slate-400 font-medium">Trazabilidad oficial de incorporación ({{ chat_messages.count }} mensaje{{ chat_messages.count|pluralize }})</span>
             </div>
 
             <!-- Cuerpo de Mensajes -->
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[420px] bg-slate-50/30 flex-1">
+            <div id="chat-scroll-container" class="p-6 space-y-4 overflow-y-auto max-h-[440px] bg-slate-50/30 flex-1">
                 {% if chat_messages %}
                     {% for msg in chat_messages %}
                         <div class="flex flex-col {% if msg.sender == request.user %}items-end{% else %}items-start{% endif %} space-y-1">
@@ -172,6 +212,19 @@
                                 {% endif %}">
                                 <p class="whitespace-pre-line">{{ msg.message }}</p>
 
+                                <!-- Archivo Adjunto en el mensaje si existe -->
+                                {% if msg.attachment %}
+                                    <div class="pt-2 border-t {% if msg.sender == request.user %}border-purple-400/40{% else %}border-slate-200{% endif %}">
+                                        <a href="{{ msg.attachment.url }}" target="_blank" 
+                                           class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-[11px] transition-colors
+                                           {% if msg.sender == request.user %}bg-purple-700/80 hover:bg-purple-700 text-white border border-purple-400/30{% else %}bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200{% endif %}">
+                                            <i class="fa-solid fa-paperclip"></i>
+                                            <span class="truncate max-w-[200px]">Ver Archivo Adjunto</span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                        </a>
+                                    </div>
+                                {% endif %}
+
                                 <!-- Tarjeta de Reunión si fue incluida en el mensaje -->
                                 {% if msg.meeting_scheduled_at or msg.meeting_link %}
                                     <div class="p-3 rounded-xl border mt-2 text-xs space-y-1.5
@@ -185,13 +238,13 @@
                                         </div>
                                         {% if msg.meeting_scheduled_at %}
                                             <div class="text-[11px] font-bold">
-                                                Fecha: {{ msg.meeting_scheduled_at|date:"d/m/Y H:i" }} hrs
+                                                Fecha y Hora: {{ msg.meeting_scheduled_at|date:"d/m/Y H:i" }} hrs
                                             </div>
                                         {% endif %}
                                         {% if msg.meeting_link %}
-                                            <div class="pt-1">
+                                            <div class="pt-1 flex items-center gap-2">
                                                 <a href="{{ msg.meeting_link }}" target="_blank" 
-                                                   class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-purple-700 font-black rounded-lg text-[10px] hover:bg-purple-50 transition-colors">
+                                                   class="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-purple-700 font-black rounded-lg text-[10px] hover:bg-purple-50 transition-colors shadow-2xs">
                                                     <i class="fa-solid fa-video"></i> Entrar al Enlace de la Reunión
                                                 </a>
                                             </div>
@@ -217,42 +270,70 @@
             <!-- Formulario de Envío de Mensaje & Coordinación de Reunión -->
             <div class="p-4 sm:p-5 bg-white border-t border-slate-200 space-y-3">
 
-                <!-- Plantillas Rápidas -->
-                <div class="flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+                <!-- Plantillas Rápidas para Administrador -->
+                <div class="flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar pb-1">
                     <span class="text-slate-400 font-bold shrink-0">Plantillas:</span>
-                    <button type="button" onclick="document.getElementById('id_message').value = 'Hola, revisamos tus antecedentes y quisiéramos coordinar una breve reunión de 15 minutos para validar tus datos y darte la bienvenida oficial a Skilly. ¿Qué horario te acomoda?'"
+                    <button type="button" onclick="setTemplate('Hola, revisamos tus antecedentes y quisiéramos coordinar una breve reunión de 15 minutos para validar tus datos y darte la bienvenida oficial a Skilly. ¿Qué horario te acomoda?')"
                             class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
                         📅 Coordinar Reunión 15 min
                     </button>
-                    <button type="button" onclick="document.getElementById('id_message').value = 'Hola, tu título/certificación presenta poca legibilidad o falta el reverso del documento. Por favor actualízalo o conversemos para ayudarte.'"
+                    <button type="button" onclick="setTemplate('Hola, tu certificado o documento de respaldo presenta baja legibilidad o está incompleto. Por favor sube una nueva versión o adjúntala por este chat para continuar tu validación.')"
                             class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
-                        📄 Aclarar Documentación
+                        📄 Aclarar Documentos
+                    </button>
+                    <button type="button" onclick="setTemplate('Hola, confirmamos que hemos realizado con éxito la entrevista de validación. Procederemos a habilitar tu perfil certificado en el marketplace.')"
+                            class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                        ✅ Entrevista Realizada
+                    </button>
+                    <button type="button" onclick="setTemplate('¡Felicitaciones! Tus antecedentes han sido revisados y tu perfil profesional ha sido aprobado y validado oficialmente.')"
+                            class="px-2.5 py-1 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 text-slate-600 rounded-lg shrink-0 font-medium transition-colors">
+                        🎉 Aprobación & Bienvenida
                     </button>
                 </div>
 
-                <form action="{% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" method="post" class="space-y-3">
+                <form action="{% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" method="post" enctype="multipart/form-data" class="space-y-3">
                     {% csrf_token %}
                     <div>
                         {{ form.message }}
                     </div>
 
-                    <!-- Campos de Reunión (Colapsables/Opcionales) -->
-                    <div class="p-3 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-2">
+                    <!-- Campos de Reunión & Adjunto (Colapsables/Opcionales) -->
+                    <div class="p-3.5 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-3">
                         <div class="flex items-center justify-between text-xs font-bold text-purple-900">
                             <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-calendar-plus text-purple-600"></i> Agendar Reunión (Opcional)
+                                <i class="fa-solid fa-calendar-plus text-purple-600"></i> Agendar o Reagendar Reunión (Opcional)
                             </span>
-                            <span class="text-[10px] text-purple-600">Google Meet / Zoom</span>
+                            <button type="button" onclick="window.open('https://meet.google.com/new', '_blank')" class="text-[10px] text-purple-700 hover:underline font-bold inline-flex items-center gap-1">
+                                <i class="fa-solid fa-video text-purple-600"></i> Abrir Google Meet para crear enlace
+                            </button>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Fecha y Hora de la Reunión:</label>
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <label class="block text-[10px] font-bold text-slate-500">Fecha y Hora de la Reunión:</label>
+                                    <div class="flex items-center gap-1 text-[9px]">
+                                        <button type="button" onclick="setQuickDate(1, 10, 0)" class="text-purple-600 hover:underline font-bold">Mañana 10h</button>
+                                        <span>·</span>
+                                        <button type="button" onclick="setQuickDate(1, 15, 30)" class="text-purple-600 hover:underline font-bold">Mañana 15:30h</button>
+                                        <span>·</span>
+                                        <button type="button" onclick="setQuickDate(2, 11, 0)" class="text-purple-600 hover:underline font-bold">+2 días 11h</button>
+                                    </div>
+                                </div>
                                 {{ form.meeting_scheduled_at }}
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Enlace de Videollamada:</label>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Enlace de Videollamada (Meet / Zoom):</label>
                                 {{ form.meeting_link }}
                             </div>
+                        </div>
+
+                        <!-- Adjuntar Documento o Archivo -->
+                        <div class="pt-2 border-t border-purple-100/70">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1">
+                                <i class="fa-solid fa-paperclip text-purple-600 mr-1"></i> Adjuntar Archivo o Documento al Mensaje (Opcional):
+                            </label>
+                            {{ form.attachment }}
                         </div>
                     </div>
 
@@ -268,5 +349,58 @@
 
     </div>
 
+    <!-- Modal para Rechazar Perfil con Motivo -->
+    <div id="modal-reject-pro" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-3xl max-w-md w-full shadow-2xl space-y-4 text-left">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 class="font-extrabold text-slate-900 text-sm">Rechazar Perfil de {{ pro_profile.user.get_full_name|default:pro_profile.user.username }}</h3>
+                <button type="button" onclick="document.getElementById('modal-reject-pro').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-600">El profesional podrá ver esta justificación en su panel y en el chat para corregir su documentación.</p>
+            <form action="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='reject' %}?next={% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" method="post" class="space-y-3">
+                {% csrf_token %}
+                <label class="block text-xs font-bold text-slate-700">Motivo del Rechazo / Observaciones:</label>
+                <textarea name="rejection_reason" required rows="3" class="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500" placeholder="Explique la razón (documento no coincide, ilegible, antecedentes insuficientes)..."></textarea>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-reject-pro').classList.add('hidden')" class="px-3 py-1.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Cancelar</button>
+                    <button type="submit" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-xs">Confirmar Rechazo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    function setTemplate(text) {
+        const textarea = document.getElementById('id_message');
+        if (textarea) {
+            textarea.value = text;
+            textarea.focus();
+        }
+    }
+
+    function setQuickDate(daysAhead, hours, minutes) {
+        const input = document.getElementById('id_meeting_scheduled_at');
+        if (!input) return;
+        const d = new Date();
+        d.setDate(d.getDate() + daysAhead);
+        d.setHours(hours, minutes, 0, 0);
+
+        // Format to YYYY-MM-DDTHH:MM local
+        const pad = (n) => String(n).padStart(2, '0');
+        const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        input.value = formatted;
+    }
+
+    // Auto-scroll chat to bottom
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('chat-scroll-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
 {% endblock %}

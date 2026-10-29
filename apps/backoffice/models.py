@@ -56,6 +56,12 @@ class ValidationMessage(models.Model):
     message = models.TextField(verbose_name="Mensaje de Coordinación")
     meeting_link = models.URLField(blank=True, null=True, verbose_name="Enlace de Reunión (Google Meet, Zoom, etc.)")
     meeting_scheduled_at = models.DateTimeField(blank=True, null=True, verbose_name="Fecha y Hora Agendada para la Reunión")
+    attachment = models.FileField(
+        upload_to='validation_chat_files/',
+        blank=True,
+        null=True,
+        verbose_name="Archivo o Documento Adjunto"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

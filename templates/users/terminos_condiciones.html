@@ -1,0 +1,181 @@
+<!-- PLANTILLA OFICIAL DE TÉRMINOS Y CONDICIONES DE USO - SKILLY -->
+{% extends 'base.html' %}
+
+{% block title %}Términos y Condiciones de Uso | Skilly{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+
+    <!-- Header Principal -->
+    <div class="bg-gradient-to-br from-slate-950 via-brand-950 to-purple-950 rounded-3xl p-8 sm:p-10 text-white shadow-2xl relative overflow-hidden border border-brand-800/40">
+        <div class="absolute -right-12 -bottom-12 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/10 text-brand-300 border border-white/10 backdrop-blur-xs">
+                <i class="fa-solid fa-scale-balanced text-brand-400"></i> Marco Legal y Operativo Oficial
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white">Términos y Condiciones de Skilly</h1>
+            <p class="text-sm text-slate-300 max-w-3xl leading-relaxed">
+                Bienvenido a Skilly. Al acceder, registrarte o hacer uso de nuestra plataforma digital, aceptas de manera libre y voluntaria regirte por los siguientes Términos y Condiciones, los cuales garantizan un espacio seguro, transparente y profesional tanto para organizaciones como para profesionales independientes.
+            </p>
+            <div class="flex items-center gap-4 pt-2 text-xs text-brand-200">
+                <span><i class="fa-regular fa-calendar mr-1.5 text-brand-400"></i> Última actualización: Octubre 2026</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-shield-halved mr-1.5 text-emerald-400"></i> Plataforma con Custodia Escrow</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegación Rápida & Acciones -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'users:register' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Registro
+        </a>
+        <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs border border-slate-200 shadow-2xs transition-colors">
+            <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+        </button>
+    </div>
+
+    <!-- Contenido de las Cláusulas -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 sm:p-10 space-y-10 text-slate-700 leading-relaxed text-sm">
+
+        <!-- 1. Definición y Alcance -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">1</span>
+                <h2 class="text-lg font-black">Naturaleza de la Plataforma y Definiciones</h2>
+            </div>
+            <p>
+                <b>Skilly</b> es una plataforma digital de intermediación que acompaña a organizaciones en sus procesos de <b>People & Culture</b> y conecta de forma eficiente a <b>Profesionales Independientes</b> con PyMES, Start-Ups y corporaciones bajo el modelo <b>Talent as a Service (TaaS)</b>.
+            </p>
+            <ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-600">
+                <li><b>Profesional Independiente (Pro):</b> Especialista acreditado que publica sus servicios, sesiones de consultoría o ejecuta proyectos en las áreas de People, Tech, Diseño y Gestión.</li>
+                <li><b>Organización / Contratante:</b> Empresa, PyME o persona jurídica que busca talento para acelerar proyectos o fortalecer su cultura interna.</li>
+                <li><b>Custodia Escrow:</b> Sistema de seguridad transaccional por el cual el pago se retiene de forma neutral hasta que el servicio es efectivamente entregado y validado.</li>
+            </ul>
+        </section>
+
+        <!-- 2. Registro y Verificación Documental -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">2</span>
+                <h2 class="text-lg font-black">Registro, Credenciales y Validación Documental</h2>
+            </div>
+            <p>
+                Para garantizar la excelencia y la confianza en la red, todo profesional debe someterse a una <b>Mesa de Validación Documental</b>:
+            </p>
+            <ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-600">
+                <li>El usuario garantiza que toda la información suministrada (títulos, certificaciones, experiencia y datos de identidad) es verídica, vigente y fidedigna.</li>
+                <li>El equipo de Skilly Back-Office podrá coordinar entrevistas de onboarding o validación mediante videollamada y solicitar respaldos adicionales antes de otorgar la insignia de certificación.</li>
+                <li>Skilly se reserva el derecho de rechazar perfiles que no acrediten suficiente idoneidad técnica o que entreguen información inconsistente.</li>
+            </ul>
+        </section>
+
+        <!-- 3. Contratación y Custodia Escrow -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">3</span>
+                <h2 class="text-lg font-black">Mecanismo de Pago en Custodia (Escrow)</h2>
+            </div>
+            <p>
+                Para proteger ambas partes, toda transacción monetaria dentro de Skilly opera bajo custodia transaccional:
+            </p>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+                <p><b>Abono Seguro:</b> Al confirmar una reserva, la organización abona el 100% de los honorarios a través de la pasarela autorizada (Webpay Plus). Los fondos quedan en custodia (estado RETENIDO) sin transferirse directamente al profesional.</p>
+                <p><b>Ejecución del Servicio:</b> El profesional ejecuta la consultoría o proyecto de acuerdo a los términos pactados.</p>
+                <p><b>Liberación de Fondos:</b> Una vez concluida la sesión y confirmada la entrega sin objeciones en un plazo máximo de 48 horas hábiles, el monto neto es transferido al profesional, descontando la comisión de servicio correspondiente.</p>
+            </div>
+        </section>
+
+        <!-- 4. Comisión de la Plataforma -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">4</span>
+                <h2 class="text-lg font-black">Tarifas y Comisión de Plataforma (Take Rate)</h2>
+            </div>
+            <p>
+                Skilly retiene un porcentaje sobre el valor bruto del servicio contratado (Take Rate de intermediación y gobernanza tecnológica), el cual cubre los costos de la pasarela bancaria, la custodia transaccional segura, el arbitraje en caso de controversias y el soporte continuo. Dicho porcentaje es informado de forma transparente antes de concretar la reserva.
+            </p>
+        </section>
+
+        <!-- 5. Mediación de Controversias y Disputas -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">5</span>
+                <h2 class="text-lg font-black">Centro de Mediación y Resolución de Disputas</h2>
+            </div>
+            <p>
+                En caso de desacuerdo en cuanto al alcance, cumplimiento de plazos o calidad de la entrega:
+            </p>
+            <ul class="list-disc pl-5 space-y-1.5 text-xs text-slate-600">
+                <li>Cualquiera de las partes puede abrir un caso de <b>Disputa Formal</b> a través de la plataforma.</li>
+                <li>Los fondos en custodia se congelan inmediatamente mientras el equipo de mediadores de Skilly revisa la trazabilidad de los chats, entregables y evidencias presentadas.</li>
+                <li>La resolución administrativa podrá dictaminar: la liberación de fondos al profesional, el reembolso a la organización contratante, o un acuerdo compensatorio dividido.</li>
+            </ul>
+        </section>
+
+        <!-- 6. Confidencialidad y Propiedad Intelectual -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">6</span>
+                <h2 class="text-lg font-black">Confidencialidad y Propiedad Intelectual</h2>
+            </div>
+            <p>
+                Todos los entregables, reportes, códigos o diagnósticos desarrollados por el profesional para la organización contratante pertenecerán exclusivamente a la organización una vez liberados los fondos. Ambas partes se obligan a guardar estricta reserva de la información confidencial compartida durante la ejecución de los servicios.
+            </p>
+        </section>
+
+        <!-- 7. Sanciones y Política de Strikes -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">7</span>
+                <h2 class="text-lg font-black">Código de Conducta y Sistema de Strikes</h2>
+            </div>
+            <p>
+                Para preservar el ecosistema profesional, Skilly aplica amonestaciones formales (<b>Strikes</b>) ante incumplimientos injustificados, faltas de respeto o incomparecencia a reuniones. La acumulación de 3 amonestaciones faculta la suspensión o expulsión definitiva de la plataforma.
+            </p>
+        </section>
+
+        <!-- 8. Compromiso Ético y ODS -->
+        <section class="space-y-3">
+            <div class="flex items-center gap-2.5 text-slate-900 border-b border-slate-100 pb-2">
+                <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center font-black text-xs">8</span>
+                <h2 class="text-lg font-black">Compromiso Ético y Objetivos de Desarrollo Sostenible (ODS)</h2>
+            </div>
+            <p>
+                Skilly adhiere activamente a la agenda global de sostenibilidad de la ONU:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div class="p-3.5 rounded-2xl border border-rose-200 bg-rose-50/50 flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center font-black text-xs shrink-0">5</span>
+                    <div>
+                        <span class="font-bold text-slate-900 block text-xs">ODS 5: Igualdad de Género</span>
+                        <span class="text-[11px] text-slate-500">Promoción de espacios seguros y equitativos de liderazgo.</span>
+                    </div>
+                </div>
+                <div class="p-3.5 rounded-2xl border border-red-200 bg-red-50/50 flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-xl bg-red-800 text-white flex items-center justify-center font-black text-xs shrink-0">8</span>
+                    <div>
+                        <span class="font-bold text-slate-900 block text-xs">ODS 8: Trabajo Decente</span>
+                        <span class="text-[11px] text-slate-500">Reducción de la informalidad y crecimiento económico sostenible.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer de la Página -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 glass-panel rounded-2xl text-xs text-slate-500">
+        <p>© 2026 Skilly SpA. Todos los derechos reservados.</p>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'users:register' %}" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition-all shadow-xs">
+                Aceptar y Crear Cuenta
+            </a>
+            <a href="{% url 'services:marketplace' %}" class="text-slate-600 hover:underline">
+                Ir al Marketplace
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

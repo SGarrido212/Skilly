@@ -1,0 +1,22 @@
+# Framework principal
+Django>=5.2.0,<6.0.0
+
+# Procesamiento de imágenes (Perfiles, Avatares, Respaldo)
+pillow>=12.0.0
+
+# Integración Pasarela de Pagos (Webpay Plus / Transbank)
+transbank-sdk>=6.1.0
+requests>=2.32.0
+
+# Soporte de Zonas Horarias y Base de Datos
+tzdata>=2025.1
+sqlparse>=0.5.0
+asgiref>=3.8.0
+
+# Dependencias auxiliares
+marshmallow>=3.20.0
+certifi>=2024.0.0
+charset-normalizer>=3.3.0
+idna>=3.7
+urllib3>=2.2.0
+packaging>=24.0

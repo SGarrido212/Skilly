@@ -108,8 +108,18 @@
                             {{ pro_profile.get_validation_status_display }}
                         </span>
                         {% if pro_profile.validation_status != 'VALIDADO' %}
-                            <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='approve' %}" class="text-emerald-700 font-bold underline hover:text-emerald-900">Validar ahora</a>
+                            <a href="{% url 'backoffice:validate_pro' pk=pro_profile.pk action='approve' %}?next={% url 'backoffice:user_detail' user_id=target_user.id %}" class="text-emerald-700 font-bold underline hover:text-emerald-900">Validar ahora</a>
                         {% endif %}
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'backoffice:validation_chat' pro_id=pro_profile.id %}" class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg border border-purple-200 inline-flex items-center gap-1.5 text-xs transition-colors">
+                            <i class="fa-solid fa-comments"></i> Coordinar por Chat & Reunión
+                            {% if pro_profile.validation_messages.count > 0 %}
+                                <span class="w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-black">
+                                    {{ pro_profile.validation_messages.count }}
+                                </span>
+                            {% endif %}
+                        </a>
                     </div>
                 </div>
 

@@ -305,6 +305,9 @@ def update_admin_notes_action(request, user_id):
             form.save()
             messages.success(request, "Notas internas de administración guardadas.")
 
+    next_url = request.GET.get('next') or request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
     return redirect('backoffice:user_detail', user_id=user_id)
 
 
@@ -530,7 +533,7 @@ def pro_validations_view(request):
 @login_required
 @admin_required
 def validate_pro_action(request, pk, action):
-    """Acción de aprobación o rechazo documental."""
+    """Acción de aprobación, rechazo documental o reintegro a estado pendiente."""
     profile = get_object_or_404(ProfessionalProfile, pk=pk)
 
     if action == 'approve':
@@ -546,6 +549,14 @@ def validate_pro_action(request, pk, action):
         profile.save()
         messages.info(request, f"Perfil del profesional {profile.user.get_full_name() or profile.user.username} ha sido RECHAZADO.")
 
+    elif action == 'pending':
+        profile.validation_status = ProfessionalProfile.STATUS_PENDIENTE
+        profile.save()
+        messages.info(request, f"Perfil del profesional {profile.user.get_full_name() or profile.user.username} reabierto a PENDIENTE de revisión.")
+
+    next_url = request.GET.get('next') or request.POST.get('next')
+    if next_url:
+        return redirect(next_url)
     return redirect('backoffice:validations')
 
 
@@ -555,9 +566,10 @@ def validation_chat_view(request, pro_id):
     """Mesa de chat de validación y coordinación de reunión de bienvenida/entrevista con el profesional."""
     pro_profile = get_object_or_404(ProfessionalProfile, pk=pro_id)
     chat_messages = pro_profile.validation_messages.all().select_related('sender').order_by('created_at')
+    scheduled_meeting = pro_profile.validation_messages.filter(meeting_scheduled_at__isnull=False).order_by('-created_at').first()
 
     if request.method == 'POST':
-        form = ValidationMessageForm(request.POST)
+        form = ValidationMessageForm(request.POST, request.FILES)
         if form.is_valid():
             msg = form.save(commit=False)
             msg.professional = pro_profile
@@ -570,10 +582,14 @@ def validation_chat_view(request, pro_id):
     else:
         form = ValidationMessageForm()
 
+    admin_notes_form = AdminProNotesForm(instance=pro_profile)
+
     context = {
         'pro_profile': pro_profile,
         'chat_messages': chat_messages,
+        'scheduled_meeting': scheduled_meeting,
         'form': form,
+        'admin_notes_form': admin_notes_form,
     }
     return render(request, 'backoffice/chat_validacion.html', context)
 
@@ -587,9 +603,10 @@ def pro_own_validation_chat_view(request):
 
     pro_profile = get_object_or_404(ProfessionalProfile, user=request.user)
     chat_messages = pro_profile.validation_messages.all().select_related('sender').order_by('created_at')
+    scheduled_meeting = pro_profile.validation_messages.filter(meeting_scheduled_at__isnull=False).order_by('-created_at').first()
 
     if request.method == 'POST':
-        form = ValidationMessageForm(request.POST)
+        form = ValidationMessageForm(request.POST, request.FILES)
         if form.is_valid():
             msg = form.save(commit=False)
             msg.professional = pro_profile
@@ -605,6 +622,7 @@ def pro_own_validation_chat_view(request):
     context = {
         'pro_profile': pro_profile,
         'chat_messages': chat_messages,
+        'scheduled_meeting': scheduled_meeting,
         'form': form,
     }
     return render(request, 'backoffice/chat_validacion_pro.html', context)

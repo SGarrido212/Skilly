@@ -318,7 +318,11 @@
                                 {% endif %}
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <a href="{% url 'backoffice:validate_pro' pk=p.pk action='approve' %}" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors">
+                                <a href="{% url 'backoffice:validation_chat' pro_id=p.id %}" class="px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold rounded-lg text-xs transition-colors inline-flex items-center gap-1" title="Coordinar Chat & Reunión">
+                                    <i class="fa-solid fa-comments"></i>
+                                    <span>Chat</span>
+                                </a>
+                                <a href="{% url 'backoffice:validate_pro' pk=p.pk action='approve' %}" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors" title="Aprobar">
                                     <i class="fa-solid fa-check"></i>
                                 </a>
                                 <a href="{% url 'backoffice:validations' %}" class="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-xs transition-colors">

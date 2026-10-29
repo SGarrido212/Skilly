@@ -27,8 +27,8 @@ urlpatterns = [
 
     # Mesa de Validación Documental de Profesionales y Chat de Entrevista/Reunión
     path('validations/', views.pro_validations_view, name='validations'),
-    path('validations/<int:pk>/<str:action>/', views.validate_pro_action, name='validate_pro'),
     path('validations/<int:pro_id>/chat/', views.validation_chat_view, name='validation_chat'),
+    path('validations/<int:pk>/<str:action>/', views.validate_pro_action, name='validate_pro'),
     path('my-validation-chat/', views.pro_own_validation_chat_view, name='pro_own_validation_chat'),
 
     # Mediación y Arbitraje de Disputas
