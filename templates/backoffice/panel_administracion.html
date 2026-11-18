@@ -3,8 +3,42 @@
 
 {% block title %}Centro de Control & Back-Office Administrativo | Skilly{% endblock %}
 
+{% block extra_head %}
+<!-- Metadatos de Seguridad Extrema: Evitar indexación, rastreo o fugas de referrer -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="same-origin">
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Cinta de Seguridad Extrema & Auditoría Activa -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border border-emerald-500/30 text-slate-300 rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs shadow-md">
+        <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/40 tracking-wider text-[11px]">
+                <i class="fa-solid fa-shield-halved text-emerald-400 animate-pulse"></i> SEGURIDAD EXTREMA ACTIVA
+            </span>
+            <span class="hidden sm:inline text-slate-600">|</span>
+            <div class="flex items-center gap-2 text-slate-300">
+                <i class="fa-solid fa-network-wired text-sky-400"></i>
+                <span class="text-slate-400">IP Sesión:</span>
+                <strong class="text-white font-mono bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+                    {{ request.META.HTTP_X_FORWARDED_FOR|default:request.META.REMOTE_ADDR|default:"127.0.0.1" }}
+                </strong>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+            <span class="inline-flex items-center gap-1 bg-slate-800/80 px-2 py-1 rounded border border-slate-700/60">
+                <i class="fa-solid fa-clock text-amber-400"></i> Sesión: 30m máx
+            </span>
+            <span class="inline-flex items-center gap-1 bg-slate-800/80 px-2 py-1 rounded border border-slate-700/60">
+                <i class="fa-solid fa-lock text-purple-400"></i> Anti-Bruteforce (Axes)
+            </span>
+            <span class="inline-flex items-center gap-1 bg-slate-800/80 px-2 py-1 rounded border border-slate-700/60">
+                <i class="fa-solid fa-fingerprint text-emerald-400"></i> Audit Log ON
+            </span>
+        </div>
+    </div>
 
     <!-- Header Principal -->
     <div class="bg-gradient-to-r from-slate-950 via-purple-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-purple-800/40 relative overflow-hidden">
@@ -473,4 +507,22 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof anime !== 'undefined') {
+        // Entrada escalonada de tarjetas KPI y secciones operativas
+        anime({
+            targets: '.grid > div',
+            opacity: [0, 1],
+            translateY: [12, 0],
+            delay: anime.stagger(50),
+            duration: 500,
+            easing: 'easeOutQuad'
+        });
+    }
+});
+</script>
 {% endblock %}

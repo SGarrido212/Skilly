@@ -113,6 +113,10 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("[OK] Beneficios configurados."))
 
         # 4. Usuarios base (Admin y Organizaciones)
+        # ── Admin ──────────────────────────────────────────────────────
+        # La contraseña del admin se establece manualmente en producción
+        # con: python manage.py createsuperuser
+        # o bien: python manage.py changepassword admin
         admin_user, created_admin = CustomUser.objects.get_or_create(
             username='admin',
             defaults={
@@ -125,9 +129,17 @@ class Command(BaseCommand):
             }
         )
         if created_admin:
-            admin_user.set_password('admin123')
+            # Contraseña aleatoria segura — cámbiala inmediatamente con:
+            # python manage.py changepassword admin
+            import secrets
+            admin_user.set_password(secrets.token_urlsafe(24))
             admin_user.save()
+            self.stdout.write(self.style.WARNING(
+                "IMPORTANTE: El usuario 'admin' fue creado con una contraseña aleatoria. "
+                "Cambia la contraseña con: python manage.py changepassword admin"
+            ))
 
+        # ── Organización de demo ────────────────────────────────────────
         org_user, created_org = CustomUser.objects.get_or_create(
             username='tech_corp',
             defaults={
@@ -139,7 +151,8 @@ class Command(BaseCommand):
             }
         )
         if created_org:
-            org_user.set_password('org123')
+            import secrets
+            org_user.set_password(secrets.token_urlsafe(24))
             org_user.save()
             OrganizationProfile.objects.get_or_create(
                 user=org_user,
@@ -393,7 +406,8 @@ class Command(BaseCommand):
                 }
             )
             if u_created:
-                user.set_password('pro123')
+                import secrets
+                user.set_password(secrets.token_urlsafe(24))
                 user.save()
 
             profile, _ = ProfessionalProfile.objects.get_or_create(
@@ -458,8 +472,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("[OK] Bloques de disponibilidad actualizados para los próximos 7 días."))
         self.stdout.write(self.style.SUCCESS("--------------------------------------------------"))
         self.stdout.write(self.style.SUCCESS("¡Marketplace de Skilly poblado con éxito!"))
-        self.stdout.write(self.style.SUCCESS("Credenciales de acceso:"))
-        self.stdout.write(self.style.SUCCESS("  - ADMIN:         admin / admin123 (Ruta: /backoffice/)"))
-        self.stdout.write(self.style.SUCCESS("  - PROFESIONALES: [carlos_pro, valentina_pro, matias_pro, camila_pro, ...] / pro123"))
-        self.stdout.write(self.style.SUCCESS("  - ORGANIZACIÓN:  tech_corp / org123"))
+        self.stdout.write(self.style.WARNING(
+            "RECUERDA: Todos los usuarios del seed tienen contraseñas aleatorias. "
+            "Cambia las contraseñas antes de usar en producción: "
+            "python manage.py changepassword <username>"
+        ))
         self.stdout.write(self.style.SUCCESS("--------------------------------------------------"))

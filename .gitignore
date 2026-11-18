@@ -1,0 +1,70 @@
+# ═══════════════════════════════════════════════════════
+#  .gitignore — Skilly Django Project
+# ═══════════════════════════════════════════════════════
+
+# Variables de entorno y secretos — NUNCA commitear
+.env
+.env.*
+*.env
+CREDENCIALES.txt
+credenciales.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos estáticos recolectados (generados por collectstatic)
+staticfiles/
+
+# Archivos de media subidos por usuarios
+media/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Tests
+.coverage
+.tox/
+htmlcov/
+.pytest_cache/
+
+# SonarQube
+.sonar/
+sonar-scanner.properties
+
+# Render / Deploy
+*.pid
+

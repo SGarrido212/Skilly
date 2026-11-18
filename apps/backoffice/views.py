@@ -1,4 +1,6 @@
 # -- VISTAS COMPLETAS DEL BACK-OFFICE DE ADMINISTRACIÓN Y CONTROL GLOBAL --
+import logging
+from functools import wraps
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -17,13 +19,36 @@ from .forms import (
     CategoryForm, BadgeForm, TakeRateForm, ValidationMessageForm
 )
 
+# Logger de auditoría del Back-Office (escribe en logs del servidor)
+audit_logger = logging.getLogger('skilly.backoffice_audit')
+
 
 def admin_required(view_func):
-    """Decorador de seguridad para validar rol de administrador Skilly."""
+    """
+    Decorador de seguridad para validar rol de administrador Skilly.
+    Registra cada acceso (autorizado o denegado) en el log de auditoría.
+    Si no está autenticado, redirige al login guardando la ruta actual.
+    """
+    @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_admin_role:
+        if not request.user.is_authenticated:
+            return redirect(f"/users/login/?next={request.path}")
+
+        if not request.user.is_admin_role:
+            audit_logger.warning(
+                "ACCESO BACKOFFICE DENEGADO | Usuario: %s | IP: %s | Ruta: %s",
+                getattr(request.user, 'username', 'anónimo'),
+                request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '?')),
+                request.path,
+            )
             messages.error(request, "Acceso restringido al Back-Office de Skilly.")
             return redirect('services:marketplace')
+
+        audit_logger.info(
+            "Acceso backoffice | Admin: %s | Ruta: %s",
+            request.user.username,
+            request.path,
+        )
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
