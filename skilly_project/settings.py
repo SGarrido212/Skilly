@@ -16,10 +16,11 @@ ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '')
 if ALLOWED_HOSTS_ENV:
     ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(',') if h.strip()]
 else:
-    ALLOWED_HOSTS = ['*'] if DEBUG else ['localhost', '127.0.0.1', '.onrender.com']
+    ALLOWED_HOSTS = ['*']
 
-if not DEBUG and '.onrender.com' not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('.onrender.com')
+for host in ['.onrender.com', 'localhost', '127.0.0.1']:
+    if host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
 AUTH_USER_MODEL = 'users.CustomUser'
 ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', 'django-admin/')
@@ -124,10 +125,12 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+WHITENOISE_MANIFEST_STRICT = False
+
 if not DEBUG:
     STORAGES = {
         'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
         },
         'default': {
             'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -160,7 +163,8 @@ LOGOUT_REDIRECT_URL = 'services:marketplace'
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     USE_X_FORWARDED_HOST = True
-    SECURE_SSL_REDIRECT = True
+    # Solo forzar SSL redirect si no es localhost / entorno local
+    SECURE_SSL_REDIRECT = bool(os.environ.get('RENDER') or os.environ.get('DATABASE_URL'))
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
@@ -171,14 +175,17 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REDIRECT_EXEMPT = [r'^payments/webpay/commit/']
 
-    _hosts = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
-    CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in _hosts if not h.startswith('.')]
-    if '.onrender.com' in ALLOWED_HOSTS:
-        CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
-    CSRF_TRUSTED_ORIGINS.extend([
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.onrender.com',
         'https://webpay3gint.transbank.cl',
         'https://webpay3g.transbank.cl',
-    ])
+    ]
+    _hosts = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
+    for h in _hosts:
+        if h != '*' and not h.startswith('.'):
+            origin = f"https://{h}"
+            if origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(origin)
 
 AXES_ENABLED = True
 AXES_FAILURE_LIMIT = 5

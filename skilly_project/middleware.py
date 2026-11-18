@@ -52,6 +52,9 @@ class AdminIPWhitelistMiddleware:
                 return self.get_response(request)
 
             allowed_ips = getattr(settings, 'ADMIN_ALLOWED_IPS', [])
+            if '*' in allowed_ips:
+                return self.get_response(request)
+
             # Si no hay IPs configuradas en producción, solo localhost (Render Shell)
             if not allowed_ips:
                 allowed_ips = ['127.0.0.1', '::1']
