@@ -31,7 +31,7 @@ def register_view(request):
                     company_name=f"Empresa {user.first_name or user.username}",
                     tax_id="PENDIENTE"
                 )
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, f"¡Bienvenido a Skilly, {user.first_name or user.username}! Tu cuenta se ha creado exitosamente.")
             return redirect('users:dashboard')
     else:

@@ -77,7 +77,7 @@ def booking_create_view(request, service_id):
                         tax_id=company_rut
                     )
 
-                login(request, org_user)
+                login(request, org_user, backend='django.contrib.auth.backends.ModelBackend')
 
             booking = form.save(commit=False)
             booking.service = service
