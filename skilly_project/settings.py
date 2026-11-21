@@ -1,28 +1,53 @@
+"""
+Django Settings for Skilly — Production-ready (Render.com) & Local-compatible
+Diseñado para funcionar sin errores tanto en desarrollo local como en producción.
+"""
+
 from pathlib import Path
 import os
 import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR / 'apps'))
+IS_TESTING = 'test' in sys.argv
 
+# -. En desarrollo local pueden faltar dependencias opcionales de despliegue.
+try:
+    import dj_database_url
+    HAS_DJ_DATABASE_URL = True
+except ImportError:
+    HAS_DJ_DATABASE_URL = False
+
+try:
+    import whitenoise
+    HAS_WHITENOISE = True
+except ImportError:
+    HAS_WHITENOISE = False
+
+try:
+    import axes
+    HAS_AXES = True
+except ImportError:
+    HAS_AXES = False
+
+# -. En producción SECRET_KEY debe definirse; la clave alternativa es solo para desarrollo local.
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
     'django-insecure-skilly-dev-key-change-in-production-2026-safe-fallback-x9!'
 )
 
+# -. Render establece DEBUG=False mediante variables de entorno.
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '')
 if ALLOWED_HOSTS_ENV:
     ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(',') if h.strip()]
 else:
-    ALLOWED_HOSTS = ['*']
-
-for host in ['.onrender.com', 'localhost', '127.0.0.1']:
-    if host not in ALLOWED_HOSTS and '*' not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(host)
+    ALLOWED_HOSTS = ['*'] if DEBUG else ['localhost', '127.0.0.1', 'skilly.onrender.com']
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# -. En producción, configura ADMIN_URL_PATH con una ruta no evidente y no expongas /admin/.
 ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', 'django-admin/')
 
 INSTALLED_APPS = [
@@ -32,7 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'axes',
+
     'users',
     'services',
     'availability',
@@ -44,23 +69,39 @@ INSTALLED_APPS = [
     'backoffice',
 ]
 
+if HAS_AXES:
+    INSTALLED_APPS.insert(6, 'axes')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+
+if HAS_WHITENOISE:
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+
+MIDDLEWARE.extend([
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'axes.middleware.AxesMiddleware',
+])
+
+if HAS_AXES:
+    MIDDLEWARE.append('axes.middleware.AxesMiddleware')
+
+MIDDLEWARE.extend([
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'skilly_project.middleware.AdminIPWhitelistMiddleware',
-]
+])
 
+# -. Las llamadas directas a login deben indicar backend cuando hay varios configurados.
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+if HAS_AXES and not IS_TESTING:
+    AUTHENTICATION_BACKENDS.insert(0, 'axes.backends.AxesStandaloneBackend')
 
 ROOT_URLCONF = 'skilly_project.urls'
 
@@ -82,9 +123,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skilly_project.wsgi.application'
 
+# -. DATABASE_URL selecciona PostgreSQL; en local se usa SQLite.
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    import dj_database_url
+if DATABASE_URL and HAS_DJ_DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -107,7 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-        'OPTIONS': {'min_length': 8 if DEBUG else 8},
+        'OPTIONS': {'min_length': 8},
     },
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
@@ -125,12 +166,10 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-WHITENOISE_MANIFEST_STRICT = False
-
-if not DEBUG:
+if HAS_WHITENOISE and not DEBUG:
     STORAGES = {
         'staticfiles': {
-            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
         },
         'default': {
             'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -151,6 +190,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# -. Las sesiones vencen tras 30 minutos de inactividad y se guardan en la base de datos.
 SESSION_COOKIE_AGE = 1800
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -160,11 +200,10 @@ LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'users:dashboard'
 LOGOUT_REDIRECT_URL = 'services:marketplace'
 
+# -. Aplicar cabeceras de seguridad solo fuera del modo DEBUG.
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    USE_X_FORWARDED_HOST = True
-    # Solo forzar SSL redirect si no es localhost / entorno local
-    SECURE_SSL_REDIRECT = bool(os.environ.get('RENDER') or os.environ.get('DATABASE_URL'))
+    SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
@@ -173,33 +212,29 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_REDIRECT_EXEMPT = [r'^payments/webpay/commit/']
-
     CSRF_TRUSTED_ORIGINS = [
-        'https://*.onrender.com',
-        'https://webpay3gint.transbank.cl',
-        'https://webpay3g.transbank.cl',
+        f"https://{h.strip()}"
+        for h in os.environ.get('ALLOWED_HOSTS', '').split(',')
+        if h.strip()
     ]
-    _hosts = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
-    for h in _hosts:
-        if h != '*' and not h.startswith('.'):
-            origin = f"https://{h}"
-            if origin not in CSRF_TRUSTED_ORIGINS:
-                CSRF_TRUSTED_ORIGINS.append(origin)
 
-AXES_ENABLED = True
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1
-AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
-AXES_RESET_ON_SUCCESS = True
-AXES_LOCKOUT_TEMPLATE = None
-AXES_VERBOSE = False
-AXES_NEVER_LOCKOUT_WHITELIST = False
-AXES_HTTP_RESPONSE_CODE = 403
+# -. django-axes bloquea intentos repetidos de autenticación fallidos.
+if HAS_AXES and not IS_TESTING:
+    AXES_ENABLED = True
+    AXES_FAILURE_LIMIT = 5
+    AXES_COOLOFF_TIME = 1  # -. El bloqueo dura una hora.
+    AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
+    AXES_RESET_ON_SUCCESS = True
+    AXES_LOCKOUT_TEMPLATE = None
+    AXES_VERBOSE = False
+    AXES_NEVER_LOCKOUT_WHITELIST = False
+    AXES_HTTP_RESPONSE_CODE = 403
 
+# -. Restringir acceso al admin y back-office a las IPs configuradas.
 _admin_ips_raw = os.environ.get('ADMIN_ALLOWED_IPS', '')
 ADMIN_ALLOWED_IPS = [ip.strip() for ip in _admin_ips_raw.split(',') if ip.strip()]
 
+# -. Mantener eventos de auditoría de seguridad y back-office en los logs.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -223,11 +258,6 @@ LOGGING = {
             'propagate': False,
         },
         'skilly.backoffice_audit': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'skilly.transbank': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,

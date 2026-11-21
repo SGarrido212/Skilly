@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Iniciando sembrado masivo de datos para Skilly Marketplace..."))
 
-        # 1. Categorías Ampliadas
+        # -. 1. Categorías
         categories_data = [
             {
                 'slug': 'desarrollo-software',
@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"[OK] {len(categories_map)} categorías verificadas."))
 
-        # 2. Insignias Cualitativas
+        # -. 2. Insignias
         badges_data = [
             ("Entrega a tiempo", "fa-clock", "Cumplimiento puntual de plazos pactados"),
             ("Comunicación fluida", "fa-comments", "Excelente claridad y respuesta rápida"),
@@ -94,7 +94,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("[OK] Insignias cualitativas preparadas."))
 
-        # 3. Beneficios
+        # -. 3. Beneficios
         benefits_data = [
             ("Seguro de Salud Freelance - Coopeuch", "Coopeuch Seguros", "Seguros & Salud", "Cobertura de salud complementaria y urgencias para independientes con tarifa preferencial.", "https://coopeuch.cl", "Membresía Activa"),
             ("Platzi Enterprise 30% OFF", "Platzi", "Formación & Cursos", "Acceso con descuento exclusivo a rutas de aprendizaje en tecnología y liderazgo.", "https://platzi.com", "Descuento Exclusivo"),
@@ -112,11 +112,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("[OK] Beneficios configurados."))
 
-        # 4. Usuarios base (Admin y Organizaciones)
-        # ── Admin ──────────────────────────────────────────────────────
-        # La contraseña del admin se establece manualmente en producción
-        # con: python manage.py createsuperuser
-        # o bien: python manage.py changepassword admin
+        # -. 4. Usuarios base; configura manualmente la contraseña del admin en producción.
         admin_user, created_admin = CustomUser.objects.get_or_create(
             username='admin',
             defaults={
@@ -129,8 +125,6 @@ class Command(BaseCommand):
             }
         )
         if created_admin:
-            # Contraseña aleatoria segura — cámbiala inmediatamente con:
-            # python manage.py changepassword admin
             import secrets
             admin_user.set_password(secrets.token_urlsafe(24))
             admin_user.save()
@@ -139,7 +133,6 @@ class Command(BaseCommand):
                 "Cambia la contraseña con: python manage.py changepassword admin"
             ))
 
-        # ── Organización de demo ────────────────────────────────────────
         org_user, created_org = CustomUser.objects.get_or_create(
             username='tech_corp',
             defaults={
@@ -163,7 +156,7 @@ class Command(BaseCommand):
                 }
             )
 
-        # 5. Profesionales Validados y sus Servicios
+        # -. 5. Profesionales y servicios
         professionals_data = [
             {
                 'username': 'carlos_pro',
@@ -421,12 +414,11 @@ class Command(BaseCommand):
                     'admin_notes': ''
                 }
             )
-            # Asegurar que esté validado por si el perfil ya existía
+            # -. Los valores por defecto de get_or_create no actualizan perfiles existentes.
             if profile.validation_status != ProfessionalProfile.STATUS_VALIDADO:
                 profile.validation_status = ProfessionalProfile.STATUS_VALIDADO
                 profile.save()
 
-            # Crear o actualizar servicios del profesional
             for sdata in pdata['services']:
                 cat = categories_map[sdata['category_slug']]
                 svc, created_svc = Service.objects.get_or_create(
@@ -449,10 +441,9 @@ class Command(BaseCommand):
                     svc.save()
                 total_services_created += 1
 
-            # Generar bloques de disponibilidad (TimeSlots) para los próximos 7 días
             for day_offset in range(1, 8):
                 slot_date = today + datetime.timedelta(days=day_offset)
-                # Omitir domingos
+                # -. No se programan servicios los domingos.
                 if slot_date.weekday() == 6:
                     continue
                 start_times = [

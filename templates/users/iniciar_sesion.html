@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div id="login-card" class="max-w-md w-full glass-panel p-8 rounded-2xl shadow-xl space-y-6">
+    <div class="max-w-md w-full glass-panel p-8 rounded-2xl shadow-xl space-y-6">
         <div class="text-center">
             <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center text-2xl mx-auto mb-3">
                 <i class="fa-solid fa-lock"></i>
@@ -14,40 +14,19 @@
             <p class="text-xs text-slate-500 mt-1">Accede a tu panel de control, agenda y contrataciones</p>
         </div>
 
-        {% if form.errors %}
-        <div id="login-error-alert" class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-3 shadow-xs">
-            <i class="fa-solid fa-circle-exclamation text-rose-500 text-base mt-0.5 shrink-0"></i>
-            <div class="space-y-0.5">
-                <span class="font-bold text-rose-900 block text-xs">Error de inicio de sesión</span>
-                {% if form.non_field_errors %}
-                    {% for error in form.non_field_errors %}
-                        <p class="text-[11px] text-rose-700 font-medium">{{ error }}</p>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-[11px] text-rose-700 font-medium">Nombre de usuario o contraseña incorrectos. Por favor, verifica tus datos e inténtalo nuevamente.</p>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-
         <form method="post" class="space-y-4">
             {% csrf_token %}
             {% if request.GET.next %}
             <input type="hidden" name="next" value="{{ request.GET.next }}">
             {% endif %}
-
             <div>
                 <label for="id_username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nombre de Usuario</label>
-                <input type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" required 
-                       class="w-full px-4 py-2.5 rounded-xl border {% if form.errors %}border-rose-300 bg-rose-50/30 text-rose-900{% else %}border-slate-300{% endif %} focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-medium text-slate-800" 
-                       placeholder="tu_usuario">
+                <input type="text" name="username" id="id_username" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-medium text-slate-800" placeholder="tu_usuario">
             </div>
 
             <div>
                 <label for="id_password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Contraseña</label>
-                <input type="password" name="password" id="id_password" required 
-                       class="w-full px-4 py-2.5 rounded-xl border {% if form.errors %}border-rose-300 bg-rose-50/30 text-rose-900{% else %}border-slate-300{% endif %} focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-medium text-slate-800" 
-                       placeholder="••••••••">
+                <input type="password" name="password" id="id_password" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 font-medium text-slate-800" placeholder="••••••••">
             </div>
 
             <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
@@ -60,20 +39,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var errorAlert = document.getElementById('login-error-alert');
-    if (errorAlert && typeof anime !== 'undefined') {
-        anime({
-            targets: '#login-card',
-            translateX: [0, -8, 8, -6, 6, -3, 3, 0],
-            duration: 450,
-            easing: 'easeInOutSine'
-        });
-    }
-});
-</script>
 {% endblock %}

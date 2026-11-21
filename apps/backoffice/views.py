@@ -1,4 +1,3 @@
-# -- VISTAS COMPLETAS DEL BACK-OFFICE DE ADMINISTRACIÓN Y CONTROL GLOBAL --
 import logging
 from functools import wraps
 from django.shortcuts import render, get_object_or_404, redirect
@@ -19,7 +18,6 @@ from .forms import (
     CategoryForm, BadgeForm, TakeRateForm, ValidationMessageForm
 )
 
-# Logger de auditoría del Back-Office (escribe en logs del servidor)
 audit_logger = logging.getLogger('skilly.backoffice_audit')
 
 
@@ -53,30 +51,24 @@ def admin_required(view_func):
     return _wrapped_view
 
 
-# ==============================================================================
-# 1. DASHBOARD PRINCIPAL & CENTRO DE COMANDO
-# ==============================================================================
+# -. 1. Panel principal.
 
 @login_required
 @admin_required
 def admin_dashboard_view(request):
     """Panel general con métricas ejecutivas, alertas en tiempo real y accesos rápidos."""
-    # Métricas financieras
     total_volume = PaymentTransaction.objects.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_held = PaymentTransaction.objects.filter(escrow_status=PaymentTransaction.STATUS_RETENIDO).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_fees = PaymentTransaction.objects.aggregate(Sum('skilly_fee_amount'))['skilly_fee_amount__sum'] or 0
 
-    # Contadores de usuarios
     total_users_count = CustomUser.objects.count()
     pros_count = CustomUser.objects.filter(role=CustomUser.ROLE_PROFESIONAL).count()
     orgs_count = CustomUser.objects.filter(role=CustomUser.ROLE_ORGANIZACION).count()
 
-    # Contadores de servicios
     total_services_count = Service.objects.count()
     active_services_count = Service.objects.filter(is_active=True).count()
     pending_services_count = Service.objects.filter(status=Service.STATUS_EN_REVISION).count()
 
-    # Contadores de reservas y supervisión
     total_bookings_count = Booking.objects.count()
     active_bookings_count = Booking.objects.filter(
         status__in=[Booking.STATUS_PAGADO_EN_CUSTODIA, Booking.STATUS_EN_EJECUCION]
@@ -85,11 +77,9 @@ def admin_dashboard_view(request):
         skilly_staff_supervision_requested=True
     ).exclude(status__in=[Booking.STATUS_FINALIZADO, Booking.STATUS_CANCELADO]).count()
 
-    # Alertas operativas
     pending_validations_count = ProfessionalProfile.objects.filter(validation_status=ProfessionalProfile.STATUS_PENDIENTE).count()
     open_disputes_count = Dispute.objects.filter(status=Dispute.STATUS_ABIERTA).count()
 
-    # Feeds recientes
     recent_transactions = PaymentTransaction.objects.select_related('booking', 'booking__service', 'booking__organization').order_by('-created_at')[:6]
     recent_disputes = Dispute.objects.filter(status=Dispute.STATUS_ABIERTA).select_related('booking', 'reported_by')[:5]
     recent_validations = ProfessionalProfile.objects.filter(validation_status=ProfessionalProfile.STATUS_PENDIENTE).select_related('user')[:5]
@@ -98,7 +88,6 @@ def admin_dashboard_view(request):
         skilly_staff_supervision_requested=True
     ).exclude(status__in=[Booking.STATUS_FINALIZADO, Booking.STATUS_CANCELADO]).select_related('service', 'professional', 'organization')[:5]
 
-    # Configuración de Take Rate de Skilly
     current_take_rate = PlatformSetting.get_take_rate()
     take_rate_form = TakeRateForm(instance=PlatformSetting.get_instance())
 
@@ -145,9 +134,7 @@ def update_take_rate_action(request):
     return redirect('backoffice:dashboard')
 
 
-# ==============================================================================
-# 2. GESTIÓN INTEGRAL DE USUARIOS, PERFILES Y SANCIONES (STRIKES)
-# ==============================================================================
+# -. 2. Usuarios, perfiles y sanciones.
 
 @login_required
 @admin_required
@@ -186,7 +173,6 @@ def users_management_view(request):
             Q(organization_profile__company_name__icontains=search_query)
         )
 
-    # Conteo por rol para las pestañas
     all_count = CustomUser.objects.count()
     pros_count = CustomUser.objects.filter(role=CustomUser.ROLE_PROFESIONAL).count()
     orgs_count = CustomUser.objects.filter(role=CustomUser.ROLE_ORGANIZACION).count()
@@ -216,7 +202,6 @@ def user_detail_view(request, user_id):
     strike_form = StrikeForm()
     admin_notes_form = AdminProNotesForm(instance=pro_profile) if pro_profile else None
 
-    # Métricas y registros específicos
     if target_user.is_professional:
         user_bookings = target_user.received_bookings.all().select_related('service', 'organization').order_by('-created_at')
         user_services = target_user.services.all().order_by('-created_at')
@@ -355,9 +340,7 @@ def toggle_pro_expulsion(request, user_id):
     return redirect('backoffice:user_detail', user_id=user_id)
 
 
-# ==============================================================================
-# 3. MESA DE MODERACIÓN Y CONTROL DE SERVICIOS
-# ==============================================================================
+# -. 3. Moderación de servicios.
 
 @login_required
 @admin_required
@@ -379,7 +362,6 @@ def services_moderation_view(request):
             Q(category__name__icontains=search_query)
         )
 
-    # Conteo por estado para los badges
     counts = {
         'all': Service.objects.count(),
         'en_revision': Service.objects.filter(status=Service.STATUS_EN_REVISION).count(),
@@ -442,9 +424,7 @@ def service_moderation_action(request, pk):
     return redirect('backoffice:services_moderation')
 
 
-# ==============================================================================
-# 4. MONITOREO DE RESERVAS Y SUPERVISIÓN DE SESIONES
-# ==============================================================================
+# -. 4. Monitoreo de reservas.
 
 @login_required
 @admin_required
@@ -474,7 +454,6 @@ def bookings_monitor_view(request):
             Q(organization__last_name__icontains=search_query)
         )
 
-    # Contadores
     supervision_count = Booking.objects.filter(skilly_staff_supervision_requested=True).exclude(status__in=[Booking.STATUS_FINALIZADO, Booking.STATUS_CANCELADO]).count()
     in_escrow_count = Booking.objects.filter(status=Booking.STATUS_PAGADO_EN_CUSTODIA).count()
     in_execution_count = Booking.objects.filter(status=Booking.STATUS_EN_EJECUCION).count()
@@ -527,9 +506,7 @@ def booking_admin_action(request, pk):
     return redirect('backoffice:bookings_monitor')
 
 
-# ==============================================================================
-# 5. MESA DE VALIDACIÓN DOCUMENTAL DE PROFESIONALES (MEJORADA)
-# ==============================================================================
+# -. 5. Validación profesional.
 
 @login_required
 @admin_required
@@ -653,9 +630,7 @@ def pro_own_validation_chat_view(request):
     return render(request, 'backoffice/chat_validacion_pro.html', context)
 
 
-# ==============================================================================
-# 6. CENTRO DE MEDIACIÓN DE DISPUTAS Y ARBITRAJE
-# ==============================================================================
+# -. 6. Mediación de disputas.
 
 @login_required
 @admin_required
@@ -736,9 +711,7 @@ def dispute_detail_view(request, pk):
     return render(request, 'backoffice/detalle_disputa.html', context)
 
 
-# ==============================================================================
-# 7. LIBRO MAYOR DE AUDITORÍA TRANSACCIONAL Y CUSTODIA (ESCROW LEDGER)
-# ==============================================================================
+# -. 7. Libro mayor de custodia.
 
 @login_required
 @admin_required
@@ -762,7 +735,6 @@ def escrow_ledger_view(request):
             Q(booking__professional__username__icontains=search_query)
         )
 
-    # Totales para resumen del ledger
     total_retained = PaymentTransaction.objects.filter(escrow_status=PaymentTransaction.STATUS_RETENIDO).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_released = PaymentTransaction.objects.filter(escrow_status=PaymentTransaction.STATUS_LIBERADO).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_refunded = PaymentTransaction.objects.filter(escrow_status=PaymentTransaction.STATUS_REEMBOLSADO).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
@@ -780,9 +752,7 @@ def escrow_ledger_view(request):
     return render(request, 'backoffice/libro_custodia.html', context)
 
 
-# ==============================================================================
-# 8. AUDITORÍA DE CALIDAD E INSIGNIAS CUALITATIVAS
-# ==============================================================================
+# -. 8. Auditoría de calidad.
 
 @login_required
 @admin_required
@@ -815,9 +785,7 @@ def badge_create_action(request):
     return redirect('backoffice:quality_audit')
 
 
-# ==============================================================================
-# 9. GESTIÓN DE BENEFICIOS Y CONVENIOS
-# ==============================================================================
+# -. 9. Beneficios y convenios.
 
 @login_required
 @admin_required
@@ -882,9 +850,7 @@ def benefit_delete_action(request, pk):
     return redirect('backoffice:benefits_management')
 
 
-# ==============================================================================
-# 10. GESTIÓN DE CATEGORÍAS DEL MARKETPLACE
-# ==============================================================================
+# -. 10. Categorías del marketplace.
 
 @login_required
 @admin_required
