@@ -12,7 +12,6 @@ class BackofficeTests(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # Admin user
         self.admin_user = CustomUser.objects.create_user(
             username='admin_test',
             email='admin@test.com',
@@ -22,7 +21,6 @@ class BackofficeTests(TestCase):
             is_superuser=True
         )
 
-        # Pro user
         self.pro_user = CustomUser.objects.create_user(
             username='pro_test',
             email='pro@test.com',
@@ -35,7 +33,6 @@ class BackofficeTests(TestCase):
             hourly_rate=100.00
         )
 
-        # Org user
         self.org_user = CustomUser.objects.create_user(
             username='org_test',
             email='org@test.com',
@@ -48,7 +45,6 @@ class BackofficeTests(TestCase):
             tax_id='12345678-9'
         )
 
-        # Category and Service
         self.category = Category.objects.create(
             name='Desarrollo Web',
             slug='desarrollo-web',
@@ -92,7 +88,6 @@ class BackofficeTests(TestCase):
 
     def test_apply_and_revoke_strike(self):
         self.client.login(username='admin_test', password='password123')
-        # Apply strike
         response = self.client.post(
             reverse('backoffice:apply_strike', kwargs={'user_id': self.pro_user.id}),
             {'reason': 'Falta de respuesta reiterada a requerimientos de cliente'}
@@ -105,7 +100,6 @@ class BackofficeTests(TestCase):
         self.assertIsNotNone(strike)
         self.assertTrue(strike.is_active)
 
-        # Revoke strike
         response = self.client.get(reverse('backoffice:revoke_strike', kwargs={'strike_id': strike.id}))
         self.assertEqual(response.status_code, 302)
         self.pro_profile.refresh_from_db()
@@ -113,7 +107,6 @@ class BackofficeTests(TestCase):
 
     def test_service_moderation_actions(self):
         self.client.login(username='admin_test', password='password123')
-        # Approve service
         response = self.client.post(
             reverse('backoffice:service_moderation_action', kwargs={'pk': self.service.pk}),
             {'action': 'approve', 'admin_feedback': 'Excelente servicio'}
@@ -126,11 +119,9 @@ class BackofficeTests(TestCase):
     def test_benefits_and_categories_views(self):
         self.client.login(username='admin_test', password='password123')
         
-        # Test benefits
         response = self.client.get(reverse('backoffice:benefits_management'))
         self.assertEqual(response.status_code, 200)
 
-        # Create benefit
         post_response = self.client.post(
             reverse('backoffice:benefits_management'),
             {
@@ -146,14 +137,12 @@ class BackofficeTests(TestCase):
         self.assertEqual(post_response.status_code, 302)
         self.assertTrue(Benefit.objects.filter(title='Seguro Mutual').exists())
 
-        # Test categories
         cat_response = self.client.get(reverse('backoffice:categories_management'))
         self.assertEqual(cat_response.status_code, 200)
 
     def test_escrow_ledger_and_bookings_monitor(self):
         self.client.login(username='admin_test', password='password123')
 
-        # Create a booking
         booking = Booking.objects.create(
             service=self.service,
             professional=self.pro_user,
@@ -173,13 +162,11 @@ class BackofficeTests(TestCase):
             escrow_status=PaymentTransaction.STATUS_RETENIDO
         )
 
-        # Render Escrow Ledger
         ledger_response = self.client.get(reverse('backoffice:escrow_ledger'))
         self.assertEqual(ledger_response.status_code, 200)
         self.assertContains(ledger_response, tx.transaction_id)
         self.assertContains(ledger_response, f"Reserva #{booking.id}")
 
-        # Render Bookings Monitor
         monitor_response = self.client.get(reverse('backoffice:bookings_monitor'))
         self.assertEqual(monitor_response.status_code, 200)
         self.assertContains(monitor_response, f"Reserva #{booking.id}")
@@ -189,7 +176,6 @@ class BackofficeTests(TestCase):
         from decimal import Decimal
         from backoffice.models import PlatformSetting
 
-        # Update take rate to 18.50%
         response = self.client.post(
             reverse('backoffice:update_take_rate'),
             {'take_rate_percentage': '18.50'}
@@ -197,7 +183,6 @@ class BackofficeTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PlatformSetting.get_take_rate(), Decimal('18.50'))
 
-        # Verify dashboard displays new take rate
         dash_response = self.client.get(reverse('backoffice:dashboard'))
         self.assertEqual(dash_response.status_code, 200)
         self.assertContains(dash_response, "18.5")
@@ -206,7 +191,6 @@ class BackofficeTests(TestCase):
         self.client.login(username='admin_test', password='password123')
         from backoffice.models import ValidationMessage
 
-        # Admin posts a coordination message with meeting link and date
         response = self.client.post(
             reverse('backoffice:validation_chat', kwargs={'pro_id': self.pro_profile.id}),
             {
@@ -221,18 +205,15 @@ class BackofficeTests(TestCase):
         msg = ValidationMessage.objects.first()
         self.assertEqual(msg.meeting_link, 'https://meet.google.com/abc-defg-hij')
 
-        # Admin views the chat
         chat_admin_response = self.client.get(reverse('backoffice:validation_chat', kwargs={'pro_id': self.pro_profile.id}))
         self.assertEqual(chat_admin_response.status_code, 200)
         self.assertContains(chat_admin_response, "https://meet.google.com/abc-defg-hij")
 
-        # Professional logs in and views their own validation chat
         self.client.login(username='pro_test', password='password123')
         pro_chat_response = self.client.get(reverse('backoffice:pro_own_validation_chat'))
         self.assertEqual(pro_chat_response.status_code, 200)
         self.assertContains(pro_chat_response, "Google Meet")
 
-        # Professional replies
         pro_reply = self.client.post(
             reverse('backoffice:pro_own_validation_chat'),
             {'message': 'Perfecto, confirmado el día 25 a las 15:30.'}

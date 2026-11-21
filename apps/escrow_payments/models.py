@@ -28,7 +28,6 @@ class PaymentTransaction(models.Model):
     escrow_status = models.CharField(max_length=30, choices=ESCROW_STATUS_CHOICES, default=STATUS_INICIADA, verbose_name="Estado de Custodia")
     transaction_id = models.CharField(max_length=100, unique=True, verbose_name="ID de Transacción Interna")
 
-    # Transbank Webpay Plus Integration Fields
     buy_order = models.CharField(max_length=100, blank=True, null=True, unique=True, verbose_name="Orden de Compra Webpay")
     session_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="ID de Sesión Webpay")
     token = models.CharField(max_length=255, blank=True, null=True, verbose_name="Token Webpay (token_ws)")

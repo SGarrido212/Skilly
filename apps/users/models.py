@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 def validate_file_size(value):
     filesize = value.size
-    if filesize > 5 * 1024 * 1024:  # 5MB limit
+    if filesize > 5 * 1024 * 1024:
         raise ValidationError("El archivo no puede exceder los 5MB de tamaño.")
 
 class CustomUser(AbstractUser):

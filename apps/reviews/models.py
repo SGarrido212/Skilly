@@ -1,10 +1,8 @@
-# -- MODELO DE EVALUACIONES E INSIGNIAS CUALITATIVAS PRIVADAS --
 from django.db import models
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
 
 class Badge(models.Model):
-    # -- MODELO DE CUALIDADES / INSIGNIAS CUALITATIVAS DE PROFESIONALES --
     name = models.CharField(max_length=100, unique=True, verbose_name="Nombre de la Cualidad")
     icon = models.CharField(max_length=50, default='fa-award', help_text="Icono FontAwesome")
     description = models.CharField(max_length=255, blank=True)
@@ -14,7 +12,6 @@ class Badge(models.Model):
 
 
 class Review(models.Model):
-    # -- REGISTRO CONFIDENCIAL DE EVALUACIÓN CUALITATIVA DE SERVICIO --
     booking = models.OneToOneField('bookings.Booking', on_delete=models.CASCADE, related_name='review')
     professional = models.ForeignKey(
         settings.AUTH_USER_MODEL,

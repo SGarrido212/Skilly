@@ -53,7 +53,6 @@ class Booking(models.Model):
         help_text="Indica si el equipo de Skilly asistirá como supervisor/observador a esta primera sesión."
     )
     
-    # Policy tracking & alert calculations
     cancellation_penalty_applies = models.BooleanField(default=False, help_text="True si se canceló con menos de 24h de anticipación")
     
     created_at = models.DateTimeField(auto_now_add=True)

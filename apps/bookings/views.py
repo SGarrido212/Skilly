@@ -1,4 +1,3 @@
-# -- VISTAS DE AGENDAMIENTO, RESERVAS Y CHAT TRAZABLE --
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -13,7 +12,6 @@ from users.models import CustomUser, OrganizationProfile
 from escrow_payments.models import PaymentTransaction
 
 def booking_create_view(request, service_id):
-    # -- AGENDAMIENTO RÁPIDO Y RESERVA GUEST CHECKOUT --
     service = get_object_or_404(Service, pk=service_id, is_active=True)
     slot_id = request.GET.get('slot_id') or request.POST.get('slot_id')
 
@@ -105,7 +103,6 @@ def booking_create_view(request, service_id):
 
 @login_required
 def booking_detail_view(request, pk):
-    # -- DETALLE DE RESERVA, ACCIONES DE HITOS Y CHAT INTERNO --
     booking = get_object_or_404(Booking, pk=pk)
 
     if request.user != booking.organization and request.user != booking.professional and not request.user.is_admin_role:
@@ -129,7 +126,6 @@ def booking_detail_view(request, pk):
 
 @login_required
 def booking_send_message_view(request, pk):
-    # -- ENVÍO DE MENSAJES Y ARCHIVOS ADJUNTOS EN CHAT INTERNO --
     booking = get_object_or_404(Booking, pk=pk)
     if request.user != booking.organization and request.user != booking.professional and not request.user.is_admin_role:
         messages.error(request, "No tienes acceso a este chat.")
@@ -148,7 +144,6 @@ def booking_send_message_view(request, pk):
 
 @login_required
 def booking_update_status_view(request, pk, new_status):
-    # -- ACTUALIZACIÓN DE HITOS DEL CICLO DE VIDA DE LA RESERVA --
     booking = get_object_or_404(Booking, pk=pk)
     user = request.user
 

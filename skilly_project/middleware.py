@@ -39,7 +39,6 @@ class AdminIPWhitelistMiddleware:
         if not admin_path.startswith('/'):
             admin_path = f'/{admin_path}'
 
-        # Detectar rutas protegidas de administración
         is_django_admin = request.path.startswith(admin_path)
         is_custom_backoffice = (
             request.path.startswith('/backoffice/') and 
@@ -47,15 +46,11 @@ class AdminIPWhitelistMiddleware:
         )
 
         if is_django_admin or is_custom_backoffice:
-            # En desarrollo (DEBUG=True) no bloquear para facilitar pruebas locales
             if getattr(settings, 'DEBUG', False):
                 return self.get_response(request)
 
             allowed_ips = getattr(settings, 'ADMIN_ALLOWED_IPS', [])
-            if '*' in allowed_ips:
-                return self.get_response(request)
-
-            # Si no hay IPs configuradas en producción, solo localhost (Render Shell)
+            # -. Sin IPs configuradas, en producción solo se permite acceso local.
             if not allowed_ips:
                 allowed_ips = ['127.0.0.1', '::1']
 

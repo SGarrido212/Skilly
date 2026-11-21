@@ -1,4 +1,3 @@
-# -- FORMULARIO DE EVALUACIÓN PRIVADA DE CUALIDADES Y RETROALIMENTACIÓN --
 from django import forms
 from .models import Review, Badge
 from django.core.exceptions import ValidationError
@@ -37,7 +36,6 @@ class ReviewForm(forms.ModelForm):
         badges = cleaned_data.get('badges')
         custom_badge = cleaned_data.get('custom_badge', '').strip()
 
-        # -- VALIDACIÓN: AL MENOS 1 CUALIDAD SELECCIONADA O INGRESADA --
         if not badges and not custom_badge:
             raise ValidationError("Debes seleccionar al menos una cualidad o ingresar una cualidad extra.")
 

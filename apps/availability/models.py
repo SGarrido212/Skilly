@@ -37,7 +37,7 @@ class TimeSlot(models.Model):
             return True
         if self.status == self.STATUS_PRE_RESERVADO and self.reserved_until:
             if timezone.now() > self.reserved_until:
-                # Lock has expired!
+                # -. Los bloqueos vencidos liberan el horario para otra reserva.
                 return True
         return False
 

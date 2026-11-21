@@ -1,4 +1,3 @@
-# -- VISTAS DE GESTIÓN DE DISPONIBILIDAD Y BLOQUES HORARIOS --
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,7 +6,6 @@ import datetime
 
 @login_required
 def availability_manage_view(request):
-    # -- GESTIÓN Y GENERACIÓN DE BLOQUES HORARIOS DE 20 MINUTOS --
     if not request.user.is_professional:
         messages.warning(request, "Acceso solo para profesionales.")
         return redirect('services:marketplace')
@@ -54,7 +52,6 @@ def availability_manage_view(request):
 
 @login_required
 def slot_delete_view(request, pk):
-    # -- ELIMINACIÓN DE BLOQUE HORARIO NO RESERVADO --
     slot = get_object_or_404(TimeSlot, pk=pk, professional=request.user)
     if slot.status == TimeSlot.STATUS_OCUPADO:
         messages.error(request, "No se puede eliminar un bloque que ya está reservado por un cliente.")

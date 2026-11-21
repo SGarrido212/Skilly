@@ -1,4 +1,3 @@
-# -- VISTAS DE USUARIOS Y PERFILES EN SKILLY --
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -9,7 +8,6 @@ from availability.models import TimeSlot
 from services.models import Service
 
 def register_view(request):
-    # -- REGISTRO DE NUEVAS CUENTAS (PROFESIONAL U ORGANIZACIÓN) --
     if request.user.is_authenticated:
         return redirect('users:dashboard')
 
@@ -41,7 +39,6 @@ def register_view(request):
 
 
 def public_pro_profile_view(request, slug):
-    # -- VISUALIZACIÓN DEL PERFIL PÚBLICO DEL PROFESIONAL POR SLUG --
     profile = get_object_or_404(ProfessionalProfile, slug=slug)
     services = Service.objects.filter(professional=profile.user, is_active=True)
     available_slots = TimeSlot.objects.filter(
@@ -66,7 +63,6 @@ def public_pro_profile_view(request, slug):
 
 @login_required
 def dashboard_view(request):
-    # -- REDIRECCIÓN SEGÚN ROL DE USUARIO AUTENTICADO --
     user = request.user
     if user.is_admin_role:
         return redirect('backoffice:dashboard')
@@ -78,7 +74,6 @@ def dashboard_view(request):
 
 @login_required
 def pro_dashboard_view(request):
-    # -- PANEL DE CONTROL PARA PROFESIONALES --
     if not request.user.is_professional:
         messages.warning(request, "Acceso exclusivo para profesionales.")
         return redirect('services:marketplace')
@@ -106,7 +101,6 @@ def pro_dashboard_view(request):
 
 @login_required
 def org_dashboard_view(request):
-    # -- PANEL DE CONTROL PARA ORGANIZACIONES --
     if not request.user.is_organization:
         messages.warning(request, "Acceso exclusivo para organizaciones.")
         return redirect('services:marketplace')
@@ -123,7 +117,6 @@ def org_dashboard_view(request):
 
 @login_required
 def profile_edit_view(request):
-    # -- EDICIÓN DE DATOS Y DOCUMENTOS DE PERFIL --
     user = request.user
     if user.is_professional:
         profile, created = ProfessionalProfile.objects.get_or_create(user=user)

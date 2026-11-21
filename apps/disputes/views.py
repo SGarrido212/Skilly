@@ -1,4 +1,3 @@
-# -- VISTAS DE APERTURA Y REPORTE DE DISPUTAS --
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,7 +7,6 @@ from .forms import DisputeForm
 
 @login_required
 def dispute_create_view(request, booking_id):
-    # -- FORMULARIO DE APERTURA DE DISPUTA Y CONGELAMIENTO DE FONDOS ESCROW --
     booking = get_object_or_404(Booking, pk=booking_id)
 
     if request.user != booking.organization and request.user != booking.professional:

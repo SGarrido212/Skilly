@@ -1,4 +1,3 @@
-# -- VISTAS DEL MÓDULO DE EVALUACIONES CUALITATIVAS PRIVADAS --
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -8,7 +7,6 @@ from .forms import ReviewForm
 
 @login_required
 def review_create_view(request, booking_id):
-    # -- PROCESAMIENTO DE ENVÍO DE EVALUACIÓN CUALITATIVA DE SERVICIO --
     booking = get_object_or_404(Booking, pk=booking_id, organization=request.user)
 
     if booking.status != Booking.STATUS_FINALIZADO:
@@ -30,7 +28,6 @@ def review_create_view(request, booking_id):
             review.save()
             form.save_m2m()
 
-            # -- AGREGAR CUALIDAD EXTRA SI FUE INGRESADA POR EL USUARIO --
             custom_badge_name = form.cleaned_data.get('custom_badge', '').strip()
             if custom_badge_name:
                 badge, _ = Badge.objects.get_or_create(

@@ -1,4 +1,3 @@
-# -- VISTAS DE MARKETPLACE Y SERVICIOS --
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,7 +8,6 @@ from availability.models import TimeSlot
 from users.models import ProfessionalProfile
 
 def marketplace_view(request):
-    # -- CATÁLOGO GENERAL Y BÚSQUEDA DE SERVICIOS EN EL MARKETPLACE --
     services = Service.objects.filter(is_active=True).select_related('professional', 'category')
     categories = Category.objects.all()
 
@@ -46,7 +44,6 @@ def marketplace_view(request):
 
 
 def service_detail_view(request, pk):
-    # -- DETALLE INDIVIDUAL DEL SERVICIO Y SELECTOR DE DISPONIBILIDAD --
     service = get_object_or_404(Service, pk=pk, is_active=True)
     pro_user = service.professional
     pro_profile = getattr(pro_user, 'professional_profile', None)
@@ -67,7 +64,6 @@ def service_detail_view(request, pk):
 
 @login_required
 def service_create_view(request):
-    # -- CREACIÓN DE NUEVO SERVICIO POR PROFESIONAL --
     if not request.user.is_professional:
         messages.warning(request, "Solo los profesionales pueden crear servicios.")
         return redirect('services:marketplace')
@@ -88,7 +84,6 @@ def service_create_view(request):
 
 @login_required
 def service_edit_view(request, pk):
-    # -- EDICIÓN DE SERVICIO EXISTENTE --
     service = get_object_or_404(Service, pk=pk, professional=request.user)
 
     if request.method == 'POST':
